@@ -1,0 +1,54 @@
+{
+  "license": "Unsplash License",
+  "licenseUrl": "https://unsplash.com/license",
+  "photos": [
+    {
+      "id": "landscape",
+      "title": "Alpine valley",
+      "photographer": "Thomas Jarrand",
+      "sourceUrl": "https://unsplash.com/photos/green-open-field-viewing-mountain-under-blue-and-white-skies-during-daytime-9cY21AG4oDA",
+      "imageUrl": "https://images.unsplash.com/photo-1566318711740-03a021b1921f?auto=format&fit=max&fm=jpg&w=1600&q=85",
+      "alt": "Green alpine valley and mountain peaks beneath a blue and white sky."
+    },
+    {
+      "id": "city",
+      "title": "City in the green",
+      "photographer": "Zulfugar Karimov",
+      "sourceUrl": "https://unsplash.com/photos/modern-cityscape-with-green-park-and-blue-sky-6QP45DUayio",
+      "imageUrl": "https://images.unsplash.com/photo-1762344691827-a4cfa9baeac8?auto=format&fit=max&fm=jpg&w=1600&q=85",
+      "alt": "Modern city buildings beyond a vivid green park beneath a blue sky."
+    },
+    {
+      "id": "people",
+      "title": "Portrait in the leaves",
+      "photographer": "Kermen Tutkunova",
+      "sourceUrl": "https://unsplash.com/photos/brunette-haired-woman-near-green-leafed-plant-h3hJzV0y_PY",
+      "imageUrl": "https://images.unsplash.com/photo-1514931934888-a3c20d47dbe9?auto=format&fit=max&fm=jpg&w=1600&q=85",
+      "alt": "Portrait of a brunette woman framed by green leaves."
+    },
+    {
+      "id": "animal",
+      "title": "Fox in the meadow",
+      "photographer": "Scott Walsh",
+      "sourceUrl": "https://unsplash.com/photos/fox-on-green-grass-field-during-daytime-7LzKELgdzzI",
+      "imageUrl": "https://images.unsplash.com/photo-1508250318180-862994eb0e80?auto=format&fit=max&fm=jpg&w=1600&q=85",
+      "alt": "Orange fox resting in lush green meadow grass."
+    },
+    {
+      "id": "flowers",
+      "title": "Wildflowers in bloom",
+      "photographer": "Kier in Sight Archives",
+      "sourceUrl": "https://unsplash.com/photos/pink-flowers-with-green-leaves-GknCIf4CCCY",
+      "imageUrl": "https://images.unsplash.com/photo-1625354325087-c24511cfe65b?auto=format&fit=max&fm=jpg&w=1600&q=85",
+      "alt": "Pink wildflowers surrounded by green leaves."
+    },
+    {
+      "id": "coast",
+      "title": "Ocean meets land",
+      "photographer": "Ilyuza Mingazova",
+      "sourceUrl": "https://unsplash.com/photos/aerial-photography-of-cliff-beside-body-of-water-during-daytime-V-ONABe_ygs",
+      "imageUrl": "https://images.unsplash.com/photo-1574880721693-1cd607664618?auto=format&fit=max&fm=jpg&w=1600&q=85",
+      "alt": "Green coastal cliffs meeting blue ocean waves in Bali."
+    }
+  ]
+}
