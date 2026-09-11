@@ -1,7 +1,7 @@
 export const siteUrl = 'https://spectrumsimulations.com/';
 export const creatorName = 'David B. Stevens';
 export const contactEmail = 'info@spectrumsimulations.com';
-export const buildCredit = 'BUILT BY GPT6 ALPHA';
+export const buildCredit = 'BUILT BY GPT6 ASTRA';
 export const siteTitle = 'Spectrum — Infrared, UV & Electromagnetic Photo Effects';
 export const siteDescription = 'Explore 14 electromagnetic simulations with editable materials, X-ray transmission, infrared and UV effects. Upload, compare, mix, and export your images.';
 export const appSchema = {

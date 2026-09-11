@@ -1,6 +1,6 @@
 # Spectrum Simulations 1.1 — rendering notes
 
-Created and designed by David B. Stevens · BUILT BY GPT6 ALPHA  
+Created and designed by David B. Stevens · BUILT BY GPT6 ASTRA  
 Contact: info@spectrumsimulations.com
 
 ## What changed

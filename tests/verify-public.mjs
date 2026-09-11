@@ -13,7 +13,7 @@ const head=html.slice(0,html.indexOf('</head>'));
 const body=html.slice(html.indexOf('<body>'));
 assert.ok(body.includes('mailto:info@spectrumsimulations.com'));
 assert.ok(body.includes('David B. Stevens'));
-assert.ok(body.includes('BUILT BY GPT6 ALPHA'));
+assert.ok(body.includes('BUILT BY GPT6 ASTRA'));
 assert.ok((await fs.readFile(path.join(root,'THIRD-PARTY-LICENSES.txt'),'utf8')).includes('SIL OPEN FONT LICENSE'));
 const escaped=text=>text.replaceAll('&','&amp;');
 assert.ok(head.includes(`<title>${escaped(siteTitle)}</title>`));
