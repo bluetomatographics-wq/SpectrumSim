@@ -3,7 +3,7 @@
 Explore photographs with 14 creative electromagnetic spectrum simulations, from radio and microwave through infrared, visible light, ultraviolet, X-rays, and gamma rays.
 
 **Created and designed by David B. Stevens**  
-**BUILT BY GPT6 ALPHA**  
+**BUILT BY GPT6 ASTRA**  
 Contact: [info@spectrumsimulations.com](mailto:info@spectrumsimulations.com)  
 Live app: [spectrumsimulations.com](https://spectrumsimulations.com/)
 
