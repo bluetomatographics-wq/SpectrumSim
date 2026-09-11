@@ -17,6 +17,10 @@ The six files in `public/photos/` are distributed under the [Unsplash License](h
 
 The Unsplash copyright license does not itself grant model, trademark, or other third-party rights. Review those rights for new uses such as endorsements. Forks may replace the examples with their own appropriately licensed images.
 
+## Scientific references
+
+The modeled renderer includes NIST mass attenuation coefficients for water, polyethylene, and iron at 60, 80, and 100 keV, and an implementation of the analytic CIE color-matching approximations described by Wyman, Sloan, and Shirley (2013). [RENDERING-NOTES.md](RENDERING-NOTES.md) records the exact sources and assumptions. No third-party model weights, reference-dataset images, or measured reflectance library are bundled. External sensor-example links retain their providers' terms.
+
 ## Geist font
 
 `assets/geist.woff2` is an unmodified Geist font subset. Copyright (c) 2023 Vercel, in collaboration with basement.studio. Distributed under the SIL Open Font License 1.1. The full notice is in [licenses/Geist-OFL.txt](licenses/Geist-OFL.txt). Source: https://github.com/vercel/geist-font.

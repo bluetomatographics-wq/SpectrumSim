@@ -71,7 +71,7 @@ if(!fontName)throw Error('No built font found');
 const font=await asset('spectrum-sans','woff2',await fs.readFile(path.join(staticRoot,fontName)));
 css+=`@font-face{font-family:SpectrumSans;font-weight:100 900;font-display:swap;src:url("${path.posix.basename(font)}") format("woff2")} :root{--font-geist-sans:SpectrumSans,Arial,sans-serif;--font-geist-mono:ui-monospace,monospace}`;
 const stylesheet=await asset('spectrum','css',Buffer.from(css));
-const icon='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#111413"/><g fill="#d6eea2" transform="translate(17 12) skewX(-19)"><path d="M0 5h5v30H0z"/><path d="M8 0h5v40H8z" opacity=".8"/><path d="M16 0h5v40h-5z" opacity=".6"/><path d="M24 5h5v30h-5z" opacity=".4"/></g></svg>';
+const icon=await fs.readFile(path.join(project,'public/favicon.svg'),'utf8');
 await fs.writeFile(path.join(output,'favicon.svg'),icon);
 const escape=value=>String(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const schema=JSON.stringify(appSchema).replaceAll('<','\\u003c');

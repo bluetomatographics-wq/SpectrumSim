@@ -7,6 +7,7 @@ const {blendPixels,initialPose}=await import('../lib/viewer.ts');
 const {createEffect,defaultEffects,parseFavorites,pixelAt}=await import('../lib/creative.ts');
 const {GifEncoder}=await import('../lib/gif.ts');
 const {exportSweep,exportName}=await import('../lib/export-image.ts');
+const {modelSettings}=await import('../lib/models.ts');
 const require=createRequire(import.meta.url);
 const {createCanvas,loadImage,ImageData}=require('@napi-rs/canvas');
 const sharp=require('sharp');
@@ -30,7 +31,8 @@ for(const band of bands){
   assert.notDeepEqual(transformPixels(photoPixels.data,band.id,photoPixels,25),transformPixels(photoPixels.data,band.id,photoPixels,200),'Strength must change '+band.id);
 }
 const favorite={id:'test',name:'IR + UV',bandId:'nir',opacity:65,effects:{strength:140,mixBand:'uv',mixAmount:30},compare:true,split:35,speed:2};
-assert.deepEqual(parseFavorites(JSON.stringify([favorite])),[favorite]);
+assert.equal(parseFavorites(JSON.stringify([favorite]))[0].effects.model?.engine,'classic');
+assert.equal(parseFavorites(JSON.stringify([favorite]))[0].name,favorite.name);
 for(const raw of ['broken','{}','null',JSON.stringify([{...favorite,effects:{...favorite.effects,mixBand:'fake'}}]),JSON.stringify([{...favorite,opacity:Infinity}]),JSON.stringify([{...favorite,speed:0}])])assert.deepEqual(parseFavorites(raw),[]);
 assert.equal(parseFavorites(JSON.stringify([favorite,favorite])).length,1);
 assert.equal(parseFavorites(JSON.stringify(Array.from({length:25},(_,i)=>({...favorite,id:String(i)})))).length,20);
@@ -60,13 +62,19 @@ assert.throws(()=>new GifEncoder(0,1));
 // Exercise the same asynchronous animation-export function used by the UI.
 Object.assign(globalThis,{ImageData,document:{createElement(tag:string){assert.equal(tag,'canvas');return createCanvas(1,1);}}});
 const progress:number[]=[];
-const animation=await exportSweep(photoPixels,{strength:120,mixBand:'uv',mixAmount:25},70,.5,3,new AbortController().signal,(value:number)=>progress.push(value));
+const animationOptions={strength:120,mixBand:'uv',mixAmount:25,model:modelSettings({material:'water',palette:'ice',sourceX:23,regions:[{x:.5,y:.5,radius:.3,material:'metal'}]})};
+const animation=await exportSweep(photoPixels,animationOptions,70,.5,3,new AbortController().signal,(value:number)=>progress.push(value));
 const animationBytes=Buffer.from(await animation.arrayBuffer());
 const animationMeta=await sharp(animationBytes,{animated:true}).metadata();
 assert.equal(animationMeta.pages,56);assert.equal(animationMeta.loop,0);assert.equal(progress.at(-1),100);
 assert.equal(animationMeta.delay.reduce((sum:number,value:number)=>sum+value,0),7000,'Animation duration must match playback speed');
 assert.equal(animationMeta.width,320);assert.equal(animationMeta.pageHeight,318);
-await sharp(animationBytes,{animated:true}).raw().toBuffer();
+const animationPixels=await sharp(animationBytes,{animated:true}).ensureAlpha().raw().toBuffer();
+const expectedFirst=blendPixels(photoPixels.data,createEffect(photoPixels.data,'nir',photoPixels,animationOptions),70);
+for(const [x,y] of [[20,20],[90,135],[150,240]])for(let c=0;c<3;c++){
+ const steps=c===2?3:7,value=expectedFirst[(y*180+x)*4+c];
+ assert.equal(animationPixels[(y*320+x+70)*4+c],Math.round(Math.round(value*steps/255)*255/steps),'GIF retains custom model, palette, material regions, mixing, and opacity');
+}
 await fs.writeFile('./.build/verified-spectrum-sweep.gif',animationBytes);
 const canceled=new AbortController();canceled.abort();
 await assert.rejects(exportSweep(photoPixels,defaultEffects,100,1,0,canceled.signal,()=>{}),{name:'AbortError'});

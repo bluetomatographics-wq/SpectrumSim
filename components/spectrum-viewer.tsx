@@ -9,12 +9,15 @@ import { blendPixels, imageRectangle, initialPose, zoomPose, type Size, type Vie
 import { createEffect, effectLabel, pixelAt, type EffectOptions } from '@/lib/creative';
 import { canvasBlob, downloadBlob, exportName, exportSweep } from '@/lib/export-image';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import type { EditTool } from './model-controls';
+import type { ReferenceImage } from './reference-panel';
+import { modelSettings } from '@/lib/models';
 import { bindWheelZoom } from '@/lib/wheel-zoom';
 
 type Loaded = { pixels: ImageData; width: number; height: number };
-type Props = { loaded: Loaded; band: Band; opacity: number; effects: EffectOptions; compare:boolean; onCompare:(value:boolean)=>void; split:number; onSplit:(value:number)=>void; speed:number; onPause:()=>void; original: boolean; onOriginalChange: (value: boolean) => void; alt: string; title:string };
+type Props = { reference:ReferenceImage|null; tool:EditTool; onEditPoint:(x:number,y:number)=>void; loaded: Loaded; band: Band; opacity: number; effects: EffectOptions; compare:boolean; onCompare:(value:boolean)=>void; split:number; onSplit:(value:number)=>void; speed:number; onPause:()=>void; original: boolean; onOriginalChange: (value: boolean) => void; alt: string; title:string };
 
-export function SpectrumViewer({ loaded, band, opacity, effects, compare, onCompare, split, onSplit, speed, onPause, original, onOriginalChange, alt, title }: Props) {
+export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacity, effects, compare, onCompare, split, onSplit, speed, onPause, original, onOriginalChange, alt, title }: Props) {
   const [pose, setPose] = useState<ViewPose>(initialPose);
   const poseRef = useRef(pose);
   poseRef.current = pose;
@@ -30,9 +33,12 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
   const [exportOpen,setExportOpen]=useState(false),[exporting,setExporting]=useState(false),[progress,setProgress]=useState(0),[exportMessage,setExportMessage]=useState('');
   const exportAbort=useRef<AbortController|null>(null);
   const gesture = useRef<{ id: number; startX: number; startY: number; pan: { x: number; y: number } } | null>(null);
+  const editTap = useRef<{id:number;x:number;y:number;pixel:{x:number;y:number}}|null>(null);
   const splitVisible = compare && !original;
   const rectangle = imageRectangle(loaded, viewport, pose);
   const imageStyle: CSSProperties = { width: loaded.width, height: loaded.height, left: 0, top: 0, transformOrigin: '0 0', transform: `translate3d(${rectangle.left}px, ${rectangle.top}px, 0) scale(${rectangle.width / loaded.width})`, willChange: 'transform' };
+  const model=modelSettings(effects.model);
+  const beforeLabel=reference?'Your reference':'Original';
   const label=effectLabel(band.id,effects);
   const pixelIndex=point?(point.y*loaded.width+point.x)*4:0;
   const originalRGB=point?Array.from(loaded.pixels.data.slice(pixelIndex,pixelIndex+3)):null;
@@ -62,8 +68,8 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
     if (!before) return;
     before.width = loaded.width;
     before.height = loaded.height;
-    before.getContext('2d')?.putImageData(loaded.pixels, 0, 0);
-  }, [loaded]);
+    before.getContext('2d')?.putImageData(reference?.pixels??loaded.pixels, 0, 0);
+  }, [loaded,reference]);
 
   useEffect(() => {
     const canvas = effectCanvas.current;
@@ -97,8 +103,8 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
         ctx.fillStyle='#f1f3ec';ctx.fillRect(width*split/100,0,1,height);
       }else{ctx.putImageData(new ImageData(displayed,loaded.width,loaded.height),Math.floor((width-loaded.width)/2),0);}
       ctx.fillStyle='#111413';ctx.fillRect(0,height,width,44);ctx.fillStyle='#d6eea2';ctx.font='13px Arial';
-      ctx.fillText(original?'SPECTRUM · ORIGINAL RGB':'SPECTRUM · CREATIVE SIMULATION',10,height+17,width-20);
-      ctx.fillStyle='#f1f3ec';ctx.fillText(`${comparison?'Original | ':''}${original?'Original photo':`${label} · ${opacity}% opacity · ${(effects.strength/100).toFixed(2)}× strength`}`,10,height+34,width-20);
+      ctx.fillText(original?'SPECTRUM · ORIGINAL RGB':model.showMaterials?'SPECTRUM · ASSUMED MATERIAL MAP':'SPECTRUM · SIMULATION / ASSUMED DATA',10,height+17,width-20);
+      ctx.fillStyle='#f1f3ec';ctx.fillText(`${comparison?beforeLabel+' | ':''}${original?'Original photo':`${label} · ${opacity}% opacity · ${(effects.strength/100).toFixed(2)}× strength`}`,10,height+34,width-20);
       const blob=await canvasBlob(output);
       downloadBlob(blob,exportName(title,`${comparison?'comparison':original?'original':band.id}.png`));
       setExportMessage('PNG prepared. Check your browser’s downloads.');
@@ -129,6 +135,10 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
   }
 
   function startPan(event: PointerEvent<HTMLDivElement>) {
+    if(tool!=='view'&&event.button===0&&!(event.target as Element).closest('[data-viewer-control]')){
+      const bounds=event.currentTarget.getBoundingClientRect();const pixel=pixelAt({x:event.clientX-bounds.left,y:event.clientY-bounds.top},loaded,viewport,pose);
+      if(pixel){editTap.current={id:event.pointerId,x:event.clientX,y:event.clientY,pixel};event.currentTarget.focus({preventScroll:true});}return;
+    }
     inspectAt(event);
     if (event.button !== 0 || pose.zoom <= 1 || (event.target as Element).closest('[data-viewer-control]')) return;
     event.preventDefault();
@@ -139,6 +149,7 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
   }
 
   function movePan(event: PointerEvent<HTMLDivElement>) {
+    if(editTap.current&&Math.hypot(event.clientX-editTap.current.x,event.clientY-editTap.current.y)>7)editTap.current=null;
     inspectAt(event);
     const active = gesture.current;
     if (!active || active.id !== event.pointerId) return;
@@ -147,6 +158,10 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
   }
 
   function stopPan(event: PointerEvent<HTMLDivElement>) {
+    const tap=editTap.current;editTap.current=null;
+    if(tap?.id===event.pointerId&&event.type==='pointerup'&&tool!=='view'){
+      setPoint(tap.pixel);onEditPoint((tap.pixel.x+.5)/loaded.width,(tap.pixel.y+.5)/loaded.height);
+    }
     if (gesture.current?.id !== event.pointerId) return;
     gesture.current = null;
     setPanning(false);
@@ -155,7 +170,8 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
 
   function keyboard(event: KeyboardEvent<HTMLDivElement>) {
     if (event.target !== event.currentTarget) return;
-    if(inspect&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){
+    if(tool!=='view'&&(event.key==='Enter'||event.key===' ')){event.preventDefault();onEditPoint((point?.x??loaded.width/2)/loaded.width,(point?.y??loaded.height/2)/loaded.height);return;}
+    if((inspect||tool!=='view')&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){
       event.preventDefault();const step=event.shiftKey?10:1;
       setPoint(current=>({x:Math.max(0,Math.min(loaded.width-1,(current?.x??Math.floor(loaded.width/2))+(event.key==='ArrowRight'?step:event.key==='ArrowLeft'?-step:0))),y:Math.max(0,Math.min(loaded.height-1,(current?.y??Math.floor(loaded.height/2))+(event.key==='ArrowDown'?step:event.key==='ArrowUp'?-step:0)))}));return;
     }
@@ -173,8 +189,8 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
   }
 
   return <><div className="spectrum-canvas-viewer">
-    <div ref={surface} className={'comparison-surface ' + (pose.zoom > 1 ? 'zoomed ' : '') + (panning ? 'panning' : '')}
-      tabIndex={0} role="group" aria-label={inspect?'Image viewer. Scroll wheel or plus and minus zoom. Arrow keys move the inspected pixel; Shift moves ten pixels.':'Image viewer. Scroll wheel or plus and minus zoom, arrow keys pan, zero resets.'}
+    <div ref={surface} className={'comparison-surface ' + (pose.zoom > 1 ? 'zoomed ' : '') + (panning ? 'panning' : '')+(tool!=='view'?' editing':'')}
+      tabIndex={0} role="group" aria-label={tool!=='view'?'Image editor. Tap to place. Arrow keys move the target, Enter places it.':inspect?'Image viewer. Scroll wheel or plus and minus zoom. Arrow keys move the inspected pixel; Shift moves ten pixels.':'Image viewer. Scroll wheel or plus and minus zoom, arrow keys pan, zero resets.'}
       onPointerDown={startPan} onPointerMove={movePan} onPointerUp={stopPan} onPointerCancel={stopPan} onLostPointerCapture={stopPan} onKeyDown={keyboard}>
       <div className="original-window" style={{ clipPath: splitVisible ? `inset(0 ${100-split}% 0 0)` : 'inset(0 100% 0 0)' }}>
         <canvas ref={beforeCanvas} className="aligned-image" style={imageStyle} aria-hidden="true"/>
@@ -182,17 +198,19 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
       <div className="effect-window" style={{ clipPath: splitVisible ? `inset(0 0 0 ${split}%)` : undefined }}>
         <canvas ref={effectCanvas} className="aligned-image" style={imageStyle} aria-hidden="true"/>
       </div>
-      <span className="sr-only" role="img" aria-label={alt + (splitVisible ? ` — original on the left, ${label} simulation at ${opacity}% opacity on the right` : original ? ' — original visible light' : ` — ${label} simulation at ${opacity}% opacity`)}/>
-      <div className="comparison-caption left-caption">{splitVisible || original ? 'Original' : `${label} · ${opacity}%`}</div>
+      <span className="sr-only" role="img" aria-label={alt + (splitVisible ? ` — ${beforeLabel} on the left, ${label} simulation at ${opacity}% opacity on the right` : original ? ' — original visible light' : ` — ${label} simulation at ${opacity}% opacity`)}/>
+      <div className="comparison-caption left-caption">{splitVisible ? beforeLabel : original ? 'Original' : `${label} · ${opacity}%`}</div>
       {splitVisible && <div className="comparison-caption right-caption">{label} · {opacity}% · Simulated</div>}
       {splitVisible && <label className="split-control" data-viewer-control>
-        <span className="sr-only">Comparison divider, original left and simulation right</span>
+        <span className="sr-only">Comparison divider, {beforeLabel.toLowerCase()} left and simulation right</span>
         <Slider className="split-reveal" thumbAlignment="center" min={0} max={100} step={1} value={[split]} onValueChange={value => onSplit(Array.isArray(value) ? value[0] : value)}/>
       </label>}
-      {inspect&&point&&<span className="pixel-crosshair" aria-hidden="true" style={{left:rectangle.left+(point.x+.5)/loaded.width*rectangle.width,top:rectangle.top+(point.y+.5)/loaded.height*rectangle.height}}/>}
+      {(inspect||tool!=='view')&&point&&<span className="pixel-crosshair" aria-hidden="true" style={{left:rectangle.left+(point.x+.5)/loaded.width*rectangle.width,top:rectangle.top+(point.y+.5)/loaded.height*rectangle.height}}/>}
+      {tool!=='view'&&<span className="editor-banner">{tool==='source'?'Tap to position the assumed source':'Tap to stamp a material'} · Enter places at target</span>}
+      {(band.id==='radio'||band.id==='gamma')&&model.engine==='informed'&&!original&&<span className="source-pin" aria-label="Assumed source location" style={{left:rectangle.left+model.sourceX/100*rectangle.width,top:rectangle.top+model.sourceY/100*rectangle.height}}>+</span>}
       {inspect?<div className="pixel-readout" aria-label="Pixel inspector">
         {point&&originalRGB&&processedRGB?<><span>Pixel {point.x}, {point.y} · RGB</span><span><i style={{background:`rgb(${originalRGB.join(',')})`}}/>Original <code>{originalRGB.join(', ')}</code></span><span><i style={{background:`rgb(${processedRGB.join(',')})`}}/>{original?'Preview':'Processed'} <code>{processedRGB.join(', ')}</code></span><small>Alpha {loaded.pixels.data[pixelIndex+3]} / 255 · Hover, tap, or use arrow keys</small></>:<span>Point or tap inside the image to inspect its RGB values.</span>}
-      </div>:<div className="viewer-guidance"><span>{pose.zoom > 1 ? 'Scroll to zoom · Drag to pan' : splitVisible ? 'Scroll to zoom · Drag the divider to compare' : original ? 'Original RGB · Scroll to zoom' : 'Creative simulation · Scroll to zoom'}</span><span>{loaded.width} × {loaded.height}</span></div>}
+      </div>:<div className="viewer-guidance"><span>{pose.zoom > 1 ? 'Scroll to zoom · Drag to pan' : splitVisible ? 'Scroll to zoom · Drag the divider to compare' : original ? 'Original RGB · Scroll to zoom' : 'Modeled / artistic simulation · Scroll to zoom'}</span><span>{loaded.width} × {loaded.height}</span></div>}
     </div>
     <div className="viewer-controls">
       <label className="compare-choice"><Switch checked={splitVisible} onCheckedChange={value => { onCompare(value); if (value) onOriginalChange(false); }}/><span>Split view</span></label>
@@ -211,7 +229,7 @@ export function SpectrumViewer({ loaded, band, opacity, effects, compare, onComp
     <div className="export-options">
       <button className="export-option" onClick={()=>void savePNG(false)} disabled={exporting}><Download size={18}/><span><strong>Image · PNG</strong><small>Full processed image, up to 1,600 pixels. {original?'Exports the original preview.':'Includes your current effect.'}</small></span></button>
       <button className="export-option" onClick={()=>void savePNG(true)} disabled={exporting||!splitVisible}><Download size={18}/><span><strong>Split comparison · PNG</strong><small>{splitVisible?'Matches the divider, zoom, and pan you see.':'Enable Split view to export a comparison.'}</small></span></button>
-      <button className="export-option" onClick={()=>void saveAnimation()} disabled={exporting}><Download size={18}/><span><strong>Spectrum animation · GIF</strong><small>One looping sweep, with transitions between all 14 bands. {speed} seconds per band. Image resized to 480 pixels; GIF uses a limited color palette.</small></span></button>
+      <button className="export-option" onClick={()=>void saveAnimation()} disabled={exporting||model.showMaterials}><Download size={18}/><span><strong>Spectrum animation · GIF</strong><small>Turn off the material map for animation. One looping sweep, with transitions between all 14 bands. {speed} seconds per band. Image resized to 480 pixels; GIF uses a limited color palette.</small></span></button>
     </div>
     {exporting&&exportAbort.current&&<div className="export-progress"><progress aria-label="Animation export progress" max={100} value={progress}/><span>{progress}%</span><button className="tool-button" onClick={()=>exportAbort.current?.abort()}>Cancel</button></div>}
     <p className="export-status" role="status">{exporting&&<LoaderCircle size={15} className="spin"/>}{exportMessage}</p>

@@ -34,7 +34,7 @@ console.log('PASS: 84 photo transforms, all alpha checks, original identity, upl
 
 assert.throws(()=>transformPixels(new Uint8ClampedArray(3),'radio'));
 assert.throws(()=>transformPixels(sample,'microwave',{width:2,height:2}));
-for(const id of ['radio','microwave']){
+for(const id of ['microwave']){
  const row=new Uint8ClampedArray([255,255,255,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255]);
  const flat=new Uint8ClampedArray(20);for(let i=3;i<20;i+=4)flat[i]=255;
  const spatial=transformPixels(row,id,{width:5,height:1}), blank=transformPixels(flat,id,{width:5,height:1});

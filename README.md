@@ -1,4 +1,4 @@
-# Spectrum
+# Spectrum Simulations
 
 Explore photographs with 14 creative electromagnetic spectrum simulations, from radio and microwave through infrared, visible light, ultraviolet, X-rays, and gamma rays.
 
@@ -16,8 +16,14 @@ Live app: [spectrumsimulations.com](https://spectrumsimulations.com/)
 - Split comparison with a draggable divider, smooth cursor-centered wheel zoom, and panning.
 - Automatic spectrum playback, saved favorite settings, and an RGB pixel inspector.
 - PNG image/comparison downloads and animated GIF spectrum exports.
+- Modeled and Classic rendering, with older favorites retaining their Classic appearance.
+- Linear-light visible spectrum approximation with wavelength and bandwidth controls.
+- Material-aware infrared, UV, thermal, and radar illustrations; editable circular material regions and a material map.
+- X-ray transmission using NIST attenuation data, assumed thickness, energy, and display polarity.
+- Movable hypothetical radio/gamma sources, gamma exposure and noise controls, and separate display palettes.
+- Local comparison with an already aligned sensor reference image supplied by the user.
 
-These are **artistic simulations derived from ordinary RGB photos**. They do not recover invisible wavelengths or detect heat, radiation, internal anatomy, or radio signals.
+These are **educational and artistic simulations using ordinary RGB photos and editable assumptions**. Some stages use physical equations; other material responses are qualitative. They do not recover invisible wavelengths or detect heat, radiation, internal anatomy, or radio signals. Color hints are simple rules, not AI recognition. See [Rendering notes and research sources](RENDERING-NOTES.md) for the equations, limitations, and validation scope.
 
 ## Run locally
 
@@ -51,7 +57,7 @@ The GitHub workflow runs checks on pushes and pull requests and provides downloa
 pnpm check
 ```
 
-Checks cover TypeScript, image processing, opacity and mixing, transparent pixels, zoom geometry and animation, favorites validation, GIF decoding and cancellation, and generated website content/assets. Test images stay local. `.build/` and `outputs/` are generated and excluded from Git.
+Checks cover TypeScript, all 84 stock-photo/band combinations, opacity and mixing, transparent pixels, zoom geometry and animation, favorites validation, GIF decoding and cancellation, NIST reference transmission, temperature and thickness behavior, spectral selectivity, material regions, hypothetical source independence, and generated website content/assets. These are software and equation checks, not validation against calibrated sensor captures. Test images stay local. `.build/` and `outputs/` are generated and excluded from Git.
 
 ## Source layout
 

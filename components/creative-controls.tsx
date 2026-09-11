@@ -20,14 +20,14 @@ export function EffectControls({options,onChange,disabled,bandId}:{options:Effec
     <label className="lab-range"><span><span>Effect strength</span><output>{(options.strength/100).toFixed(2)}×</output></span>
       <Slider aria-label="Effect strength" className="opacity-slider" min={25} max={200} step={5} value={[options.strength]} disabled={disabled} onValueChange={v=>change({strength:Array.isArray(v)?v[0]:v})}/>
     </label>
-    <p className="tool-help">{bandId==='radio'?'Adjust the smoothing radius.':bandId==='microwave'?'Adjust how strongly edges stand out.':'Adjust contrast within the effect.'} 1× is the default.</p>
+    <p className="tool-help">Adjust the displayed intensity. 1× is the default.</p>
     <label className="mix-choice"><Switch checked={options.mixBand!==null} disabled={disabled} onCheckedChange={value=>change({mixBand:value?(bandId==='uv'?'nir':'uv'):null})}/><span>Mix two effects</span></label>
     {options.mixBand&&<div className="mix-settings">
       <Choice label="Second effect" value={options.mixBand} items={bands.map(b=>({value:b.id,label:b.name}))} onChange={mixBand=>change({mixBand})} disabled={disabled}/>
       <label className="lab-range"><span><span>Second effect</span><output>{options.mixAmount}%</output></span><Slider aria-label="Second effect percentage" className="opacity-slider" value={[options.mixAmount]} min={0} max={100} step={1} onValueChange={v=>change({mixAmount:Array.isArray(v)?v[0]:v})} disabled={disabled}/></label>
       <p className="tool-help">Blend the two simulations first, then use opacity to blend with the original.</p>
     </div>}
-    <button className="text-tool" onClick={()=>onChange({...defaultEffects})} disabled={disabled}><RotateCcw size={13}/>Reset strength & mix</button>
+    <button className="text-tool" onClick={()=>onChange({...options,strength:100,mixBand:null,mixAmount:50})} disabled={disabled}><RotateCcw size={13}/>Reset strength & mix</button>
   </div>;
 }
 

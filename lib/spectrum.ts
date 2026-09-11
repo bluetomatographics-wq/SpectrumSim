@@ -1,21 +1,22 @@
+import { renderModel, type ModelSettings } from './models';
 
 export const bandGroups = ['Radio & microwave','Infrared','Visible','Ultraviolet','X-ray & gamma'] as const;
 export type Band = {id:string;name:string;short:string;range:string;color:string;description:string;group:typeof bandGroups[number]};
 export const bands: Band[] = [
-{id:'radio',name:'Radio waves',short:'Radio',range:'Longer than 1 m',color:'#8ccce4',group:'Radio & microwave',description:'A radio-map-inspired view: softened image brightness becomes colored contours. This is an artistic map of your photo, not detected radio emissions.'},
-{id:'microwave',name:'Microwaves',short:'Microwave',range:'1 mm–1 m',color:'#8cddbb',group:'Radio & microwave',description:'A radar-inspired treatment emphasizes visible edges and textures in teal. It cannot recover radar returns, moisture, or hidden objects from a photo.'},
-{id:'thermal',name:'Thermal infrared',short:'Thermal IR',range:'8–14 µm',color:'#e4a279',group:'Infrared',description:'A thermal-style palette maps darker pixels to violet and brighter pixels to yellow. It shows image brightness, not temperature.'},
-{id:'nir',name:'Near infrared',short:'Near IR',range:'700–1,100 nm',color:'#e49baf',group:'Infrared',description:'A false-color interpretation inspired by infrared photography. Green-rich pixels shift to pale rose, while blue skies deepen.'},
-{id:'red',name:'Red light',short:'Red',range:'620–700 nm',color:'#ef8379',group:'Visible',description:'An RGB approximation of the red band. Red-channel detail becomes brighter, while greens and blues recede.'},
-{id:'orange',name:'Orange light',short:'Orange',range:'590–620 nm',color:'#eba55e',group:'Visible',description:'A warm color-band approximation, combining red and green channel detail in an orange palette.'},
-{id:'yellow',name:'Yellow light',short:'Yellow',range:'570–590 nm',color:'#e9d985',group:'Visible',description:'Red and green channel detail combine in a yellow palette. A creative approximation of a visible color band.'},
-{id:'green',name:'Green light',short:'Green',range:'495–570 nm',color:'#b5d790',group:'Visible',description:'Green-channel detail is emphasized in a green palette. Foliage often appears bright because of its visible color.'},
-{id:'cyan',name:'Cyan light',short:'Cyan',range:'485–495 nm',color:'#8cd5ce',group:'Visible',description:'Green and blue channel detail combine in a cyan palette, emphasizing cool colors in the original image.'},
-{id:'blue',name:'Blue light',short:'Blue',range:'450–485 nm',color:'#8eaff1',group:'Visible',description:'Blue-channel detail is emphasized in a blue palette. Blue skies and water often become the brightest areas.'},
-{id:'violet',name:'Violet light',short:'Violet',range:'400–450 nm',color:'#b29fe8',group:'Visible',description:'A violet palette built mainly from blue-channel detail. RGB photos cannot isolate a true narrow wavelength band.'},
-{id:'uv',name:'Ultraviolet',short:'UV',range:'10–400 nm',color:'#d498e7',group:'Ultraviolet',description:'A violet false-color interpretation derived from visible blue and red channels. It cannot reveal UV reflectance or fluorescence.'},
-{id:'xray',name:'X-rays',short:'X-ray',range:'0.01–10 nm',color:'#b9d9ee',group:'X-ray & gamma',description:'An inverted, high-contrast monochrome treatment inspired by radiographic imagery. It only shows the photographed surface; it cannot reveal bones or internal structures.'},
-{id:'gamma',name:'Gamma rays',short:'Gamma',range:'Shorter than 0.01 nm',color:'#f1a9d2',group:'X-ray & gamma',description:'A high-energy-map-inspired palette emphasizes bright parts of the photo. The colors represent visible brightness, not radiation, energy, or radioactive material.'}
+{id:'radio',name:'Radio waves',short:'Radio',range:'Longer than 1 m',color:'#8ccce4',group:'Radio & microwave',description:"An assumed radio source produces a smooth intensity field. Move the source and adjust its reach. Your photo provides context; no transmitter or emission is detected."},
+{id:'microwave',name:'Microwaves',short:'Microwave',range:'1 mm–1 m',color:'#8cddbb',group:'Radio & microwave',description:"An illustrative radar return uses assigned material, roughness, moisture, viewing angle, and speckle. Surface texture guides detail; geometry and radar returns are not recovered."},
+{id:'thermal',name:'Thermal infrared',short:'Thermal IR',range:'8–14 µm',color:'#e4a279',group:'Infrared',description:"Assigned materials and assumed temperatures feed an 8–14 µm thermal-radiance model. Emissivity and reflected surroundings affect the result. These are scenario settings, not measured temperatures."},
+{id:'nir',name:'Near infrared',short:'Near IR',range:'700–1,100 nm',color:'#e49baf',group:'Infrared',description:"A material-based NIR interpretation: vegetation is typically reflective, water less so. Color hints are editable guesses. Material identity and infrared reflectance cannot be established from RGB alone."},
+{id:'red',name:'Red light',short:'Red',range:'620–700 nm',color:'#ef8379',group:'Visible',description:"A smooth spectrum estimated from linear RGB is passed through a wavelength filter. Adjust its center and bandwidth. The original spectrum is ambiguous; this is an approximation."},
+{id:'orange',name:'Orange light',short:'Orange',range:'590–620 nm',color:'#eba55e',group:'Visible',description:"A smooth spectrum estimated from linear RGB is passed through a wavelength filter. Adjust its center and bandwidth. The original spectrum is ambiguous; this is an approximation."},
+{id:'yellow',name:'Yellow light',short:'Yellow',range:'570–590 nm',color:'#e9d985',group:'Visible',description:"A smooth spectrum estimated from linear RGB is passed through a wavelength filter. Adjust its center and bandwidth. The original spectrum is ambiguous; this is an approximation."},
+{id:'green',name:'Green light',short:'Green',range:'495–570 nm',color:'#b5d790',group:'Visible',description:"A smooth spectrum estimated from linear RGB is passed through a wavelength filter. Adjust its center and bandwidth. The original spectrum is ambiguous; this is an approximation."},
+{id:'cyan',name:'Cyan light',short:'Cyan',range:'485–495 nm',color:'#8cd5ce',group:'Visible',description:"A smooth spectrum estimated from linear RGB is passed through a wavelength filter. Adjust its center and bandwidth. The original spectrum is ambiguous; this is an approximation."},
+{id:'blue',name:'Blue light',short:'Blue',range:'450–485 nm',color:'#8eaff1',group:'Visible',description:"A smooth spectrum estimated from linear RGB is passed through a wavelength filter. Adjust its center and bandwidth. The original spectrum is ambiguous; this is an approximation."},
+{id:'violet',name:'Violet light',short:'Violet',range:'400–450 nm',color:'#b29fe8',group:'Visible',description:"A smooth spectrum estimated from linear RGB is passed through a wavelength filter. Adjust its center and bandwidth. The original spectrum is ambiguous; this is an approximation."},
+{id:'uv',name:'Ultraviolet',short:'UV',range:'Near-UV illustration · 320–400 nm',color:'#d498e7',group:'Ultraviolet',description:"Explore reflected near-UV or visible fluorescence under UV illumination. Each uses different assumed material responses. Hidden patterns are not recovered from the photo."},
+{id:'xray',name:'X-rays',short:'X-ray',range:'0.01–10 nm',color:'#b9d9ee',group:'X-ray & gamma',description:"A transmission model uses assigned materials, assumed thickness, and photon energy. Water, polyethylene, and iron reference coefficients guide attenuation. It cannot reveal anatomy or hidden structures."},
+{id:'gamma',name:'Gamma rays',short:'Gamma',range:'Shorter than 0.01 nm',color:'#f1a9d2',group:'X-ray & gamma',description:"A user-positioned source creates an illustrative photon-intensity map. Exposure controls the simulated counting noise. Bright photo pixels are not treated as gamma emissions."}
 ];
 export const clamp = (value:number) => Math.max(0, Math.min(255, value));
 const thermalPalette = [[8,8,28],[47,17,83],[108,29,117],[185,54,98],[237,108,54],[252,181,66],[252,247,172]];
@@ -33,7 +34,7 @@ function blur(values:Float32Array,width:number,height:number,radius:number) {
  }
  return result;
 }
-export function transformPixels(source:Uint8ClampedArray,bandId:string,dimensions?:{width:number;height:number},strength=100):Uint8ClampedArray<ArrayBuffer> {
+export function transformClassic(source:Uint8ClampedArray,bandId:string,dimensions?:{width:number;height:number},strength=100):Uint8ClampedArray<ArrayBuffer> {
  if(source.length%4)throw new Error('Invalid RGBA pixel data');
  const width=dimensions?.width??source.length/4, height=dimensions?.height??1;
  if(dimensions&&(!Number.isInteger(width)||!Number.isInteger(height)||width<1||height<1||width*height*4!==source.length))throw new Error('Image dimensions do not match the pixels');
@@ -96,6 +97,15 @@ export function transformPixels(source:Uint8ClampedArray,bandId:string,dimension
   output[i]=clamp(rr);output[i+1]=clamp(gg);output[i+2]=clamp(bb);output[i+3]=source[i+3];
  }
  return output;
+}
+export function transformPixels(source:Uint8ClampedArray,bandId:string,dimensions?:{width:number;height:number},strength=100,model?:Partial<ModelSettings>):Uint8ClampedArray<ArrayBuffer> {
+ if(source.length%4)throw new Error('Invalid RGBA pixel data');
+ const width=dimensions?.width??source.length/4,height=dimensions?.height??1;
+ if(dimensions&&(!Number.isInteger(width)||!Number.isInteger(height)||width<1||height<1||width*height*4!==source.length))throw new Error('Image dimensions do not match the pixels');
+ if(bandId==='original')return source.slice();
+ if(!bands.some(b=>b.id===bandId))throw new Error('Unknown spectrum band');
+ if(model?.engine==='classic')return transformClassic(source,bandId,dimensions,strength);
+ return renderModel(source,bandId,width,height,strength,model);
 }
 export function fitDimensions(width:number,height:number,maxDimension=1600) {
  const ratio=Math.min(1,maxDimension/Math.max(width,height));
