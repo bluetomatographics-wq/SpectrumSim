@@ -19,7 +19,7 @@ The Unsplash copyright license does not itself grant model, trademark, or other 
 
 ## Scientific references
 
-The modeled renderer includes NIST mass attenuation coefficients for water, polyethylene, and iron at 60, 80, and 100 keV, and an implementation of the analytic CIE color-matching approximations described by Wyman, Sloan, and Shirley (2013). [RENDERING-NOTES.md](RENDERING-NOTES.md) records the exact sources and assumptions. No third-party model weights, reference-dataset images, or measured reflectance library are bundled. External sensor-example links retain their providers' terms.
+The modeled renderer includes NIST mass attenuation coefficients for water, polyethylene, and iron at 60, 80, and 100 keV, and an implementation of the analytic CIE color-matching approximations described by Wyman, Sloan, and Shirley (2013). [RENDERING-NOTES.md](RENDERING-NOTES.md) records the exact sources and assumptions. No third-party model weights or measured reflectance library are bundled. Six published telescope observation images are bundled separately; see the observation library section below. External sensor-example links retain their providers' terms.
 
 ## Geist font
 
@@ -30,3 +30,7 @@ The modeled renderer includes NIST mass attenuation coefficients for water, poly
 The interface includes shadcn-derived UI components and uses React, Base UI, Lucide icons, Tailwind CSS, and other packages recorded in `package.json` and `pnpm-lock.yaml`. Each package retains its own copyright and license; installing it does not transfer ownership to Spectrum's creator.
 
 Complete available license and notice files from the installed dependency tree are collected in [licenses/DEPENDENCIES.txt](licenses/DEPENDENCIES.txt), including the notices for shadcn and its component sources. The build preserves JavaScript legal comments and embeds the applicable font and dependency notices in both downloadable app formats. Regenerate notices with `node scripts/collect-licenses.mjs` after installing or updating dependencies.
+
+## Observation library and sharing image
+
+The six assets in `public/observations/` are published NASA telescope images used for educational comparison, with individual visible credits. They are not MIT-licensed. [OBSERVATION-SOURCES.md](OBSERVATION-SOURCES.md) records exact source URLs, reuse guidance, credits, and resizing. Agency endorsement is not implied. `public/social-preview.jpg` is a resized version of the project’s previously approved social artwork; its illustrated effects are labeled simulated.

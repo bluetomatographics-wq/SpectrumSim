@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0 — 2026-10-03
+
+- Separate real observations, guided experiments, and creative photo effects.
+- Add three credited telescope pairs and three explained numerical experiments.
+- Simplify the viewer, mobile controls, spectrum legend, and source-map context.
+- Add shareable observation links and a branded social preview.
+- Preserve existing private uploads, exports, favorites, and continuous zoom.
+
+
 ## 1.1.0 — Simulation studio
 
 - Added Modeled rendering with adjustable wavelength, material, thermal, transmission, radar, and hypothetical source assumptions across all 14 bands.

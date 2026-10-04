@@ -54,5 +54,19 @@ for(const photo of Object.values(report.photos)){
 const robots=await fs.readFile(path.join(root,'robots.txt'),'utf8');assert.ok(robots.includes(`Sitemap: ${siteUrl}sitemap.xml`));assert.ok(!robots.includes('Disallow: /'));
 const sitemap=await fs.readFile(path.join(root,'sitemap.xml'),'utf8');assert.ok(sitemap.includes(`<loc>${siteUrl}</loc>`));
 const apache=await fs.readFile(path.join(root,'.htaccess'),'utf8');assert.ok(apache.includes('DirectoryIndex index.html'));assert.ok(apache.includes('DEFLATE'));assert.ok(apache.includes('immutable'));assert.ok(apache.includes('no-cache'));
-assert.ok(report.packageBytes<3_000_000);
+assert.ok(report.packageBytes<5_000_000);
 console.log('PASS: static search-readable content, canonical and sharing metadata, structured app data, local asset links, image dimensions, lazy thumbnails, font path, asset hashes, script parsing, caching rules, sitemap, robots, and viewer-height fix.');
+
+assert.equal(Object.keys(report.observations).length,6);
+for(const asset of Object.values(report.observations)){const meta=await sharp(await fs.readFile(path.join(root,asset))).metadata();assert.equal(meta.width,1280);assert.equal(meta.height,720);}
+assert.ok(head.includes('og:image'));assert.ok(head.includes(new URL(report.social,siteUrl).href));
+assert.ok(!script.includes('/observations/'));
+for(const phrase of ['Explore real images','Try an experiment','Create photo effects','NASA, ESA, and the Hubble Heritage Team','Only visible light has colors'])assert.ok(body.includes(phrase),phrase);
+assert.ok(body.includes('Source and full observation details'));
+const socialMeta=await sharp(await fs.readFile(path.join(root,report.social))).metadata();assert.equal(socialMeta.width,1200);assert.equal(socialMeta.height,630);
+console.log('PASS: six portable observation images, credits, activity navigation, spectrum legend, and social sharing image.');
+const offline=await fs.readFile('outputs/Spectrum.html','utf8');
+const offlineScript=offline.slice(offline.lastIndexOf('<script>'));
+assert.equal((offlineScript.match(/data:image\/webp;base64,/g)||[]).length,6);
+assert.ok(!offlineScript.includes('/observations/'));
+console.log('PASS: offline observation assets embedded; no unresolved reference image URLs.');

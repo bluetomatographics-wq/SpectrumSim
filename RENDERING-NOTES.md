@@ -94,3 +94,9 @@ The app links to the [EPFL corresponding RGB/NIR scene dataset](https://www.epfl
 Automated checks cover all 84 stock-photo/band combinations, alpha preservation, spectral selectivity, linear-light conversion, a numerical NIST water-slab reference, monotonic attenuation and temperature behavior, uniform slab independence from optical brightness, material overrides, source independence, normalized regions, Classic favorite migration, zoom, mixing, PNG processing paths, and decoded GIF frames/cancellation.
 
 Browser checks exercise material editing, reference upload and reset, palettes, band selection, and responsive layout. Loading the same RGB image as a reference is a functional comparison test, not sensor validation. This release has **not** been quantitatively validated against calibrated multispectral, thermal, radar, X-ray, or gamma captures.
+
+## 1.2 guided experiments and observations
+
+The independent labs in `lib/experiments.ts` use the existing NIST transmission function, a fixed 0–80 °C blackbody reference for relative 8–14 µm thermal radiance, and exact bounded-rate Poisson count samples. Thermal signal combines emitted and ambient-reflected radiance. At thermal equilibrium it is emissivity-independent. Detector blur redistributes a fixed 250-count/exposure-unit source on a 64 × 36 grid with 0.25 background counts/pixel/exposure-unit. Samples are divided by exposure and displayed on a fixed 0–6 count-rate scale; the source has arbitrary units. Tests cover flux conservation, mean/variance, equilibrium, and lower rate-estimation error at longer exposure. These are teaching models, not instrument calibrations.
+
+The six real-observation assets bypass all photo transforms. The library uses the source framing and mappings, with no numerical cross-band measurement claims. See OBSERVATION-SOURCES.md. The photo studio’s existing renderer remains available with its prior limitations.

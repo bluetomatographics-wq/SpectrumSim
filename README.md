@@ -1,13 +1,21 @@
 # Spectrum Simulations
 
-Explore photographs with 14 creative electromagnetic spectrum simulations, from radio and microwave through infrared, visible light, ultraviolet, X-rays, and gamma rays.
+Explore light in three clearly separated activities: compare published telescope observations, try guided experiments, and create 14 photo effects.
 
 **Created and designed by David B. Stevens**  
 **BUILT BY GPT6 ASTRA**  
 Contact: [info@spectrumsimulations.com](mailto:info@spectrumsimulations.com)  
 Live app: [spectrumsimulations.com](https://spectrumsimulations.com/)
 
-## What it does
+## New in 1.2
+
+- Real-image library: Pillars of Creation (visible/NIR), Whirlpool Galaxy (visible/X-ray), and Crab Nebula (visible/infrared), with reveal questions, color explanations, credits, and shareable comparison links.
+- Three guided experiments: NIST material transmission, thermal emission/reflection on a fixed scale, and a photon-counting detector with Poisson noise.
+- One photo-band selector beside the viewer, a landscape-format city default, split comparison on entry, optional advanced settings, and a mobile effect drawer.
+- An explicit non-visible/visible spectrum guide, hypothetical-source explanations, and branded Open Graph image.
+- Reference imagery is local in public and offline builds. [Observation provenance and reuse](OBSERVATION-SOURCES.md).
+
+## Photo studio
 
 - Six stock photographs: landscape, cityscape, people, animals, flowers, and coast.
 - Local JPG, PNG, and WebP uploads up to 20 MB (40 megapixels maximum).

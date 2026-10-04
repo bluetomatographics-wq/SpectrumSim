@@ -2,8 +2,8 @@ export const siteUrl = 'https://spectrumsimulations.com/';
 export const creatorName = 'David B. Stevens';
 export const contactEmail = 'info@spectrumsimulations.com';
 export const buildCredit = 'BUILT BY GPT6 ASTRA';
-export const siteTitle = 'Spectrum — Infrared, UV & Electromagnetic Photo Effects';
-export const siteDescription = 'Explore 14 electromagnetic simulations with editable materials, X-ray transmission, infrared and UV effects. Upload, compare, mix, and export your images.';
+export const siteTitle = 'Spectrum Simulations — Explore Light, Images & Experiments';
+export const siteDescription = 'Compare real telescope images, try X-ray, thermal and photon-counting experiments, and create 14 photo effects. Free, private, and browser-based.';
 export const appSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
@@ -18,6 +18,8 @@ export const appSchema = {
   inLanguage: 'en',
   isAccessibleForFree: true,
   featureList: [
+    'Three real telescope image comparisons with source credits',
+    'Three guided experiments: X-ray materials, thermal signal, and photon counting',
     '14 creative electromagnetic spectrum simulations',
     'Editable material assumptions, wavelength controls, and display palettes',
     'X-ray attenuation, thermal radiance, and hypothetical source models',

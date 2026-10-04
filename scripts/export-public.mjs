@@ -29,6 +29,12 @@ for(const id of ['landscape','city','people','animal','flowers','coast']){
   photos['/photos/'+id+'.jpg']={src:await asset(id,'webp',full),thumbnail:await asset(id+'-thumb','webp',thumbnail)};
 }
 
+const observations={};
+for(const filename of await fs.readdir(path.join(project,'public/observations'))){
+ if(!filename.endsWith('.webp'))continue;
+ observations['/observations/'+filename]=await asset(filename.slice(0,-5),'webp',await fs.readFile(path.join(project,'public/observations',filename)));
+}
+const social=await asset('spectrum-social','jpg',await fs.readFile(path.join(project,'public/social-preview.jpg')));
 function resolver(){return {name:'portable-public-resolver',setup(build){
   build.onResolve({filter:/.*/},args=>{
     if(isBuiltin(args.path))return {path:args.path,external:true};
@@ -40,6 +46,7 @@ function resolver(){return {name:'portable-public-resolver',setup(build){
     let filename=args.path;
     for(const suffix of ['', '.tsx','.ts','.js','/index.tsx','/index.ts','/index.js']){try{if((await fs.stat(args.path+suffix)).isFile()){filename=args.path+suffix;break;}}catch{}}
     let source=await fs.readFile(filename,'utf8');
+    for(const [url,replacement] of Object.entries(observations))source=source.replaceAll(url,replacement);
     if(filename.replaceAll('\\','/').endsWith('/app/page.tsx')){
       for(const [url,value] of Object.entries(photos)){
         const match=`src:'${url}'`;
@@ -84,7 +91,7 @@ const html=`<!doctype html>
 <meta name="theme-color" content="#111413"><link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Spectrum"><meta property="og:locale" content="en_US">
 <meta property="og:title" content="${escape(siteTitle)}"><meta property="og:description" content="${escape(siteDescription)}"><meta property="og:url" content="${escape(siteUrl)}">
-<meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(siteTitle)}"><meta name="twitter:description" content="${escape(siteDescription)}">
+<meta property="og:image" content="${escape(new URL(social,siteUrl).href)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Spectrum Simulations: creative photo effects, shown on a fox image. Simulated."><meta name="twitter:image" content="${escape(new URL(social,siteUrl).href)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(siteTitle)}"><meta name="twitter:description" content="${escape(siteDescription)}">
 <link rel="preload" href="${escape(font)}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${escape(stylesheet)}"><script type="application/ld+json">${schema}</script>
 <script src="${escape(script)}" defer></script>
@@ -103,7 +110,7 @@ await fs.writeFile(path.join(output,'.htaccess'),`DirectoryIndex index.html
   AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json application/xml text/xml image/svg+xml
 </IfModule>
 <IfModule mod_headers.c>
-  <FilesMatch "\\.[a-f0-9]{12}\\.(js|css|webp|woff2)$">
+  <FilesMatch "\\.[a-f0-9]{12}\\.(js|css|webp|jpg|woff2)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
   <FilesMatch "^(index\\.html|robots\\.txt|sitemap\\.xml)$">
@@ -113,12 +120,12 @@ await fs.writeFile(path.join(output,'.htaccess'),`DirectoryIndex index.html
 `);
 // Remove only stale generated assets inside this explicit output directory.
 for(const filename of await fs.readdir(path.join(output,'assets'))){
-  if(!assetFiles.has(filename)&&/^[a-z-]+\.[a-f0-9]{12}\.(webp|css|js|woff2)$/.test(filename))await fs.unlink(path.join(output,'assets',filename));
+  if(!assetFiles.has(filename)&&/^[a-z-]+\.[a-f0-9]{12}\.(webp|jpg|css|js|woff2)$/.test(filename))await fs.unlink(path.join(output,'assets',filename));
 }
 const sizes={html:Buffer.byteLength(html),javascript:client.outputFiles[0].contents.length,stylesheet:Buffer.byteLength(css),assets:0};
 for(const filename of assetFiles)sizes.assets+=(await fs.stat(path.join(output,'assets',filename))).size;
 const initial=[Buffer.from(html),client.outputFiles[0].contents,Buffer.from(css)];
-const networkEstimate=initial.reduce((sum,bytes)=>sum+gzipSync(bytes).length,0)+(await fs.stat(path.join(output,font))).size+(await fs.stat(path.join(output,photos['/photos/landscape.jpg'].src))).size;
-const report={url:siteUrl,...sizes,packageBytes:sizes.assets+sizes.html,estimatedCompressedInitialBytes:networkEstimate,files:[...assetFiles],script,stylesheet,font,photos};
+const networkEstimate=initial.reduce((sum,bytes)=>sum+gzipSync(bytes).length,0)+(await fs.stat(path.join(output,font))).size+(await fs.stat(path.join(output,observations['/observations/pillars-visible.webp']))).size+(await fs.stat(path.join(output,observations['/observations/pillars-infrared.webp']))).size;
+const report={url:siteUrl,...sizes,packageBytes:sizes.assets+sizes.html,estimatedCompressedInitialBytes:networkEstimate,files:[...assetFiles],script,stylesheet,font,photos,observations,social};
 await fs.writeFile(path.join(project,'.build/public-build-report.json'),JSON.stringify(report,null,2));
 console.log(JSON.stringify({url:siteUrl,htmlBytes:sizes.html,totalBytes:report.packageBytes,estimatedCompressedInitialBytes:networkEstimate,prerendered:body.includes('Are these real infrared')},null,2));
