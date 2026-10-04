@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0 — 2026-10-04
+
+- Added monochrome display of the selected filter, brightness and contrast sliders and drag adjustments, Pan/Adjust tones modes, reset, and optional retention across filters.
+- PNG exports include monochrome and tone adjustments; GIF sweeps remain available in Color mode.
+- Preserved synchronized zoom and bounded pan for comparison images.
+
+- Added Light, Dark, Original, and Default (device) appearance choices.
+- Remember the browser preference, follow device changes in Default, and apply the saved theme before first paint.
+- Keep photo rendering, scientific palettes, and exported image colors independent of the interface theme.
+
+
 ## 1.2.0 — 2026-10-03
 
 - Separate real observations, guided experiments, and creative photo effects.

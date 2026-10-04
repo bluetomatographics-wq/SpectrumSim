@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import type { EditTool } from './model-controls';
 import type { ReferenceImage } from './reference-panel';
 import { modelSettings } from '@/lib/models';
+import {monochromePixels,tonePixels} from '@/lib/monochrome';
 import { bindWheelZoom } from '@/lib/wheel-zoom';
 
 type Loaded = { pixels: ImageData; width: number; height: number };
@@ -28,7 +29,15 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
   const beforeCanvas = useRef<HTMLCanvasElement>(null);
   const effectCanvas = useRef<HTMLCanvasElement>(null);
   const processed = useMemo(()=>createEffect(loaded.pixels.data,band.id,loaded,effects),[loaded,band.id,effects]);
-  const displayed = useMemo(()=>blendPixels(loaded.pixels.data,processed,original?0:opacity),[loaded,processed,opacity,original]);
+  const [monochrome,setMonochrome]=useState(false),[toneMode,setToneMode]=useState<'pan'|'adjust'>('adjust');
+  const [brightness,setBrightness]=useState(0),[contrast,setContrast]=useState(0),[keepTones,setKeepTones]=useState(false);
+  const toneDrag=useRef<{id:number;x:number;y:number;b:number;c:number}|null>(null);
+  useEffect(()=>{if(!keepTones){setBrightness(0);setContrast(0);}},[band.id,keepTones]);
+  const blended = useMemo(()=>blendPixels(loaded.pixels.data,processed,original?0:opacity),[loaded,processed,opacity,original]);
+  const gray=useMemo(()=>monochromePixels(blended),[blended]);
+  const displayed=useMemo(()=>monochrome&&!original?tonePixels(gray,brightness,contrast):blended,[gray,blended,brightness,contrast,monochrome,original]);
+  const toneActive=monochrome&&!original&&tool==='view'&&toneMode==='adjust';
+  const resetTones=()=>{setBrightness(0);setContrast(0);};
   const [inspect,setInspect]=useState(false),[point,setPoint]=useState<{x:number;y:number}|null>(null);
   const [exportOpen,setExportOpen]=useState(false),[exporting,setExporting]=useState(false),[progress,setProgress]=useState(0),[exportMessage,setExportMessage]=useState('');
   const exportAbort=useRef<AbortController|null>(null);
@@ -39,7 +48,7 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
   const imageStyle: CSSProperties = { width: loaded.width, height: loaded.height, left: 0, top: 0, transformOrigin: '0 0', transform: `translate3d(${rectangle.left}px, ${rectangle.top}px, 0) scale(${rectangle.width / loaded.width})`, willChange: 'transform' };
   const model=modelSettings(effects.model);
   const beforeLabel=reference?'Your reference':'Original';
-  const label=effectLabel(band.id,effects);
+  const label=effectLabel(band.id,effects)+(monochrome?' · Monochrome':'');
   const pixelIndex=point?(point.y*loaded.width+point.x)*4:0;
   const originalRGB=point?Array.from(loaded.pixels.data.slice(pixelIndex,pixelIndex+3)):null;
   const processedRGB=point?Array.from(displayed.slice(pixelIndex,pixelIndex+3)):null;
@@ -48,7 +57,7 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
 
   useEffect(() => {
     if (!surface.current) return;
-    const motion = bindWheelZoom(surface.current, loaded, viewport, () => poseRef.current, next => { poseRef.current = next; setPose(next); }, () => gesture.current !== null);
+    const motion = bindWheelZoom(surface.current, loaded, viewport, () => poseRef.current, next => { poseRef.current = next; setPose(next); }, () => gesture.current !== null || toneDrag.current !== null);
     wheelMotion.current = motion;
     return () => { motion.destroy(); if (wheelMotion.current === motion) wheelMotion.current = null; };
   }, [loaded, viewport]);
@@ -104,7 +113,7 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
       }else{ctx.putImageData(new ImageData(displayed,loaded.width,loaded.height),Math.floor((width-loaded.width)/2),0);}
       ctx.fillStyle='#111413';ctx.fillRect(0,height,width,44);ctx.fillStyle='#d6eea2';ctx.font='13px Arial';
       ctx.fillText(original?'SPECTRUM · ORIGINAL RGB':model.showMaterials?'SPECTRUM · ASSUMED MATERIAL MAP':'SPECTRUM · SIMULATION / ASSUMED DATA',10,height+17,width-20);
-      ctx.fillStyle='#f1f3ec';ctx.fillText(`${comparison?beforeLabel+' | ':''}${original?'Original photo':`${label} · ${opacity}% opacity · ${(effects.strength/100).toFixed(2)}× strength`}`,10,height+34,width-20);
+      ctx.fillStyle='#f1f3ec';ctx.fillText(`${comparison?beforeLabel+' | ':''}${original?'Original photo':`${label} · ${opacity}% opacity · ${(effects.strength/100).toFixed(2)}× strength${monochrome?` · Brightness ${Math.round(brightness)} · Contrast ${Math.round(contrast)}`:""}`}`,10,height+34,width-20);
       const blob=await canvasBlob(output);
       downloadBlob(blob,exportName(title,`${comparison?'comparison':original?'original':band.id}.png`));
       setExportMessage('PNG prepared. Check your browser’s downloads.');
@@ -135,6 +144,13 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
   }
 
   function startPan(event: PointerEvent<HTMLDivElement>) {
+    if(event.button===0&&toneActive&&!(event.target as Element).closest('[data-viewer-control]')){
+      const bounds=event.currentTarget.getBoundingClientRect();
+      if(!splitVisible||(event.clientX-bounds.left)/bounds.width>=split/100){
+        event.preventDefault();onPause();wheelMotion.current?.cancel();event.currentTarget.setPointerCapture(event.pointerId);
+        toneDrag.current={id:event.pointerId,x:event.clientX,y:event.clientY,b:brightness,c:contrast};return;
+      }
+    }
     if(tool!=='view'&&event.button===0&&!(event.target as Element).closest('[data-viewer-control]')){
       const bounds=event.currentTarget.getBoundingClientRect();const pixel=pixelAt({x:event.clientX-bounds.left,y:event.clientY-bounds.top},loaded,viewport,pose);
       if(pixel){editTap.current={id:event.pointerId,x:event.clientX,y:event.clientY,pixel};event.currentTarget.focus({preventScroll:true});}return;
@@ -149,15 +165,23 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
   }
 
   function movePan(event: PointerEvent<HTMLDivElement>) {
+    const tone=toneDrag.current;
+    if(tone&&tone.id===event.pointerId){const bounds=event.currentTarget.getBoundingClientRect();
+      setBrightness(Math.max(-100,Math.min(100,tone.b-(event.clientY-tone.y)*viewport.height/bounds.height*.45)));
+      setContrast(Math.max(-100,Math.min(100,tone.c+(event.clientX-tone.x)*viewport.width/bounds.width*.45)));return;
+    }
     if(editTap.current&&Math.hypot(event.clientX-editTap.current.x,event.clientY-editTap.current.y)>7)editTap.current=null;
     inspectAt(event);
     const active = gesture.current;
     if (!active || active.id !== event.pointerId) return;
-    const next = imageRectangle(loaded, viewport, { zoom: pose.zoom, pan: { x: active.pan.x + event.clientX - active.startX, y: active.pan.y + event.clientY - active.startY } });
+    const bounds=event.currentTarget.getBoundingClientRect();
+    const next = imageRectangle(loaded, viewport, { zoom: pose.zoom, pan: { x: active.pan.x + (event.clientX-active.startX)*viewport.width/bounds.width, y: active.pan.y + (event.clientY-active.startY)*viewport.height/bounds.height } });
+    active.startX=event.clientX;active.startY=event.clientY;active.pan=next.pan;
     setPose({ zoom: pose.zoom, pan: next.pan });
   }
 
   function stopPan(event: PointerEvent<HTMLDivElement>) {
+    if(toneDrag.current?.id===event.pointerId){toneDrag.current=null;if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);return;}
     const tap=editTap.current;editTap.current=null;
     if(tap?.id===event.pointerId&&event.type==='pointerup'&&tool!=='view'){
       setPoint(tap.pixel);onEditPoint((tap.pixel.x+.5)/loaded.width,(tap.pixel.y+.5)/loaded.height);
@@ -189,8 +213,13 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
   }
 
   return <><div className="spectrum-canvas-viewer">
-    <div ref={surface} className={'comparison-surface ' + (pose.zoom > 1 ? 'zoomed ' : '') + (panning ? 'panning' : '')+(tool!=='view'?' editing':'')}
+    <div className="tone-toolbar">
+      <span>Filtered image</span><button aria-pressed={!monochrome} onClick={()=>{setMonochrome(false);setToneMode('pan');}}>Color</button><button aria-pressed={monochrome} onClick={()=>{setMonochrome(true);setToneMode('adjust');onOriginalChange(false);}}>Monochrome</button>
+      
+    </div>
+    <div ref={surface} className={'comparison-surface ' + (pose.zoom > 1 ? 'zoomed ' : '') + (panning ? 'panning' : '')+(tool!=='view'?' editing':'')+(toneActive?' tone-adjusting':'')}
       tabIndex={0} role="group" aria-label={tool!=='view'?'Image editor. Tap to place. Arrow keys move the target, Enter places it.':inspect?'Image viewer. Scroll wheel or plus and minus zoom. Arrow keys move the inspected pixel; Shift moves ten pixels.':'Image viewer. Scroll wheel or plus and minus zoom, arrow keys pan, zero resets.'}
+      onDoubleClick={event=>{const bounds=event.currentTarget.getBoundingClientRect();if(toneActive&&!(event.target as Element).closest('[data-viewer-control]')&&(!splitVisible||(event.clientX-bounds.left)/bounds.width>=split/100))resetTones();}}
       onPointerDown={startPan} onPointerMove={movePan} onPointerUp={stopPan} onPointerCancel={stopPan} onLostPointerCapture={stopPan} onKeyDown={keyboard}>
       <div className="original-window" style={{ clipPath: splitVisible ? `inset(0 ${100-split}% 0 0)` : 'inset(0 100% 0 0)' }}>
         <canvas ref={beforeCanvas} className="aligned-image" style={imageStyle} aria-hidden="true"/>
@@ -210,7 +239,12 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
       {(band.id==='radio'||band.id==='gamma')&&model.engine==='informed'&&!original&&<span className="source-pin" aria-label="Assumed source location" style={{left:rectangle.left+model.sourceX/100*rectangle.width,top:rectangle.top+model.sourceY/100*rectangle.height}}>+</span>}
       {inspect?<div className="pixel-readout" aria-label="Pixel inspector">
         {point&&originalRGB&&processedRGB?<><span>Pixel {point.x}, {point.y} · RGB</span><span><i style={{background:`rgb(${originalRGB.join(',')})`}}/>Original <code>{originalRGB.join(', ')}</code></span><span><i style={{background:`rgb(${processedRGB.join(',')})`}}/>{original?'Preview':'Processed'} <code>{processedRGB.join(', ')}</code></span><small>Alpha {loaded.pixels.data[pixelIndex+3]} / 255 · Hover, tap, or use arrow keys</small></>:<span>Point or tap inside the image to inspect its RGB values.</span>}
-      </div>:<div className="viewer-guidance"><span>{pose.zoom > 1 ? 'Scroll to zoom · Drag to pan' : splitVisible ? 'Scroll to zoom · Drag the divider to compare' : original ? 'Original RGB · Scroll to zoom' : 'Modeled / artistic simulation · Scroll to zoom'}</span><span>{loaded.width} × {loaded.height}</span></div>}
+      </div>:<div className="viewer-guidance"><span>{toneActive ? 'Right image: drag ↑ brighter · → more contrast' : pose.zoom > 1 ? 'Scroll to zoom · Drag to pan' : splitVisible ? 'Scroll to zoom · Drag the divider to compare' : original ? 'Original RGB · Scroll to zoom' : 'Modeled / artistic simulation · Scroll to zoom'}</span><span>{loaded.width} × {loaded.height}</span></div>}
+    </div>
+    <div className="tone-controls">
+      <div className="tone-toolbar"><button aria-pressed={toneMode==='adjust'} disabled={!monochrome||original||tool!=='view'} onClick={()=>{setToneMode('adjust');setInspect(false);}}>Adjust tones</button><button aria-pressed={toneMode==='pan'} onClick={()=>setToneMode('pan')}>Pan</button><small>{toneMode==='adjust'?'Drag the filtered side · Double-click to reset':'Drag to pan when zoomed · Scroll to zoom'}</small></div>
+      <div className="tone-sliders"><label>Brightness <output>{Math.round(brightness)}</output><input aria-label="Monochrome brightness" type="range" min="-100" max="100" step="1" value={brightness} disabled={!monochrome||original} onChange={e=>setBrightness(+e.target.value)}/></label><label>Contrast <output>{Math.round(contrast)}</output><input aria-label="Monochrome contrast" type="range" min="-100" max="100" step="1" value={contrast} disabled={!monochrome||original} onChange={e=>setContrast(+e.target.value)}/></label></div>
+      <div className="tone-toolbar"><label><input type="checkbox" checked={keepTones} onChange={e=>setKeepTones(e.target.checked)}/> Keep adjustments across filters</label><button onClick={resetTones}>Reset tones</button></div>
     </div>
     <div className="viewer-controls">
       <label className="compare-choice"><Switch checked={splitVisible} onCheckedChange={value => { onCompare(value); if (value) onOriginalChange(false); }}/><span>Split view</span></label>
@@ -229,7 +263,7 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
     <div className="export-options">
       <button className="export-option" onClick={()=>void savePNG(false)} disabled={exporting}><Download size={18}/><span><strong>Image · PNG</strong><small>Full processed image, up to 1,600 pixels. {original?'Exports the original preview.':'Includes your current effect.'}</small></span></button>
       <button className="export-option" onClick={()=>void savePNG(true)} disabled={exporting||!splitVisible}><Download size={18}/><span><strong>Split comparison · PNG</strong><small>{splitVisible?'Matches the divider, zoom, and pan you see.':'Enable Split view to export a comparison.'}</small></span></button>
-      <button className="export-option" onClick={()=>void saveAnimation()} disabled={exporting||model.showMaterials}><Download size={18}/><span><strong>Spectrum animation · GIF</strong><small>Turn off the material map for animation. One looping sweep, with transitions between all 14 bands. {speed} seconds per band. Image resized to 480 pixels; GIF uses a limited color palette.</small></span></button>
+      <button className="export-option" onClick={()=>void saveAnimation()} disabled={exporting||model.showMaterials||monochrome}><Download size={18}/><span><strong>Spectrum animation · GIF</strong><small>Switch to Color and turn off the material map for animation. One looping sweep, with transitions between all 14 bands. {speed} seconds per band. Image resized to 480 pixels; GIF uses a limited color palette.</small></span></button>
     </div>
     {exporting&&exportAbort.current&&<div className="export-progress"><progress aria-label="Animation export progress" max={100} value={progress}/><span>{progress}%</span><button className="tool-button" onClick={()=>exportAbort.current?.abort()}>Cancel</button></div>}
     <p className="export-status" role="status">{exporting&&<LoaderCircle size={15} className="spin"/>}{exportMessage}</p>

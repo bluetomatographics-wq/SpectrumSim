@@ -1,0 +1,47 @@
+/* Theme changes affect interface surfaces only; keep scientific and photo colors intact. */
+.header-actions{display:flex;align-items:center;gap:22px;flex-wrap:wrap;justify-content:flex-end}
+.theme-selector{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted-foreground)}
+.theme-selector select{font:inherit;font-size:13px;min-height:38px;border:1px solid var(--input);border-radius:6px;background:var(--card);color:var(--foreground);padding:7px 9px;cursor:pointer;max-width:155px}
+.theme-selector select:focus-visible{outline:2px solid var(--ring);outline-offset:3px}
+:root[data-theme=dark]{--background:#161719;--foreground:#f1f2f3;--card:#222426;--popover:#292c2f;--muted:#34373a;--muted-foreground:#b5b9be;--border:#44484d;--input:#777e85;--accent:#343a31;--ui-selected:#343a31;--ui-hover:#303437;--ui-strong:#e4e6e8;--ui-soft:#b5b9be;--ui-accent:#d6eea2;--ui-quiet:#1b1d1f}
+:root[data-theme=light]{--background:#f5f7f0;--foreground:#20271c;--card:#ffffff;--popover:#ffffff;--primary:#41601e;--primary-foreground:#ffffff;--muted:#e2e7db;--muted-foreground:#54604c;--border:#c5ccbd;--input:#7d8974;--ring:#41601e;--accent:#e6efd9;--ui-selected:#e6efd9;--ui-hover:#edf1e7;--ui-strong:#26351f;--ui-soft:#54604c;--ui-accent:#41601e;--ui-quiet:#eef2e8}
+/* Original inherits the approved green palette without recoloring it. */
+:root:is([data-theme=light],[data-theme=dark]) :is(.activity-nav button,.lesson-picker button,.observation-panel,.experiment-panel,.lesson-notes,.inspector,.viewer-toolbar,.viewer-controls,.band-card,.about-dialog[data-slot=dialog-content],.effect-sheet[data-slot=dialog-content],.model-controls,.reference-panel,.favorites-panel,.sweep-controls,.slab-card,.source-explanation){background:var(--card);border-color:var(--border)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.activity-nav button[aria-pressed=true],.lesson-picker button[aria-pressed=true],.engine-tabs button[aria-pressed=true],.view-tabs [data-slot=tabs-trigger][data-active],.uploaded-chip.active,.tool-button.active,.preview-original.active){background:var(--ui-selected);color:var(--foreground);border-color:var(--primary)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.tool-button,.zoom-controls button,.lab-select[data-slot=select-trigger],.model-select select,.model-select select option,.lab-select-menu,.favorite-form input,.favorite-list>div,.export-option,.band-option){background:var(--popover);color:var(--foreground);border-color:var(--input)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.tool-button:hover,.zoom-controls button:hover:not(:disabled),.favorite-list button:hover,.export-option:hover:not(:disabled),.preview-original:hover,.band-card:hover,.band-option:hover){background:var(--ui-hover);color:var(--foreground);border-color:var(--primary)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.view-tabs [data-slot=tabs-list],.engine-tabs,.gallery-viewer,.em-order>span){background:var(--ui-quiet);border-color:var(--border)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.brand-label,.header-note,.eyebrow,.intro-copy,.activity-nav small,.lesson-picker small,.lesson-title p,.lesson-notes p,.capture-credit,.range-ends,.slab-card p,.thermal-card p,.fixed-legend,.creative-intro p,.source-explanation p,.spectrum-guide-strip,.spectrum-guide-strip small,.spectrum-guide p,.tool-help,.mode-copy,.scale-labels,.science-note,.upload-hint,.upload-hint>span>span,.image-credit,.band-card small,.photo-tile,.filmstrip-heading>span:last-child,.spectrum-overview>div:last-child,.mode-preview-list>div>span:last-child,.band-group-label,footer,.footer-divider,.creator-credit,.about-dialog [data-slot=dialog-description],.about-copy,.favorites-panel summary>span,.favorite-list span,.remove-favorite,.export-option small,.reference-content,.material-key){color:var(--ui-soft)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.creator-credit strong,.about-copy strong,.science-note strong,.model-select>span,.zoom-controls output,.image-credit a){color:var(--ui-strong)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.activity-number,.lesson-number,.comparison-range output,.capture-credit a,.lesson-notes a,.lesson-answer strong,.slab-card output,.thermal-card output,.advanced-settings summary,.text-tool,.model-controls legend,.model-range output,.reference-panel summary,.reference-links a,.favorites-panel summary:after,.export-status,.export-option>svg,.science-note button,.uploaded-chip,.preview-original){color:var(--ui-accent)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.brand-label,.spectrum-guide,.guide-questions details,.capture-credit,.legend-note,.lesson-notes details,.effect-tools,.advanced-settings,.model-disclosure,.material-editor,.reference-links,.opacity-control,.band-group,.science-note,.zoom-controls){border-color:var(--border)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.comparison-range input,.model-range input,.model-check input,.export-progress progress){accent-color:var(--primary)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.opacity-slider [data-slot=slider-track]){background:var(--muted)}
+:root:is([data-theme=light],[data-theme=dark]) :is(.opacity-slider [data-slot=slider-thumb]){background:var(--card);border-color:var(--primary)}
+:root[data-theme=light] .brand-logo path[fill="#F1F3EC"]{fill:#26351f}
+:root[data-theme=light] .upload-button:hover{background:#345017;color:#fff}
+:root[data-theme=light] .photo-tile.selected{color:var(--primary)}
+:root[data-theme=light] :is(.wave-value,.mode-orbit){color:#41601e}
+:root[data-theme=light] .error-message{background:#fff0e8;color:#793619;border-color:#ae745c}
+/* These labels sit on images, so their contrast stays independent of the UI theme. */
+.comparison-caption,.photo-number,.original-toggle{color:#f1f3ec}
+@media(max-width:1100px){.brand-label{display:none}}
+@media(max-width:650px){.topbar{flex-wrap:wrap;gap:14px}.header-actions{width:100%;justify-content:space-between;gap:14px}.header-note{max-width:none;text-align:left}.brand-logo{width:220px}.theme-selector select{min-height:42px}.theme-selector{gap:7px}}
+
+/* Monochrome viewer controls */
+
+.tone-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:var(--background)}
+.tone-toolbar button{padding:6px 12px;border:1px solid currentColor;border-radius:5px;font:inherit}
+.tone-toolbar button[aria-pressed=true]{background:#d6eea2;color:#172012;border-color:#d6eea2}
+.tone-toolbar button:disabled{opacity:.4}
+.tone-marker{margin-left:auto;font-size:10px;letter-spacing:.12em}
+.tone-sliders{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:8px 16px}
+.tone-sliders label{display:block}.tone-sliders output{float:right}.tone-sliders input{display:block;width:100%;accent-color:#7c9b46;margin-top:10px}
+.tone-controls{border-block:1px solid #82907155}.tone-toolbar small{font-size:12px}
+.comparison-surface.tone-adjusting{cursor:crosshair}
+@media(max-width:600px){.tone-sliders{grid-template-columns:1fr;gap:14px}}
+.viewer:has(.spectrum-canvas-viewer){aspect-ratio:auto;height:auto;min-height:0;display:block}
+.spectrum-canvas-viewer{position:relative;inset:auto;display:flex;flex-direction:column}
+.spectrum-canvas-viewer>.comparison-surface{aspect-ratio:1.6;flex:none;min-height:240px;width:100%}
+.tone-controls{background:var(--background);color:var(--foreground)}
+.comparison-surface.tone-adjusting{touch-action:none}

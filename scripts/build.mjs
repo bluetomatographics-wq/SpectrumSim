@@ -6,7 +6,7 @@ const root=path.resolve(import.meta.dirname,'..');
 process.chdir(root);
 await fs.mkdir('.build',{recursive:true});
 await fs.mkdir('outputs',{recursive:true});
-const css=await fs.readFile('app/globals.css','utf8')+'\n'+await fs.readFile('app/learning.css','utf8');
+const css=await fs.readFile('app/globals.css','utf8')+'\n'+await fs.readFile('app/learning.css','utf8')+'\n'+await fs.readFile('app/themes.css','utf8');
 const result=await postcss([tailwind({base:root,optimize:true})]).process(css,{from:path.join(root,'app/globals.css'),to:path.join(root,'.build/styles.css')});
 await fs.writeFile('.build/styles.css',result.css);
 await fs.copyFile('assets/geist.woff2','.build/geist.woff2');

@@ -1,3 +1,4 @@
+import {themeBootScript} from '../lib/theme.ts';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createRequire,isBuiltin} from 'node:module';
@@ -88,7 +89,7 @@ const html=`<!doctype html>
 <title>${escape(siteTitle)}</title><meta name="description" content="${escape(siteDescription)}">
 <meta name="author" content="${escape(creatorName)}"><meta name="creator" content="${escape(creatorName)}"><meta name="designer" content="${escape(creatorName)}"><meta name="generator" content="${escape(buildCredit)}">
 <link rel="canonical" href="${escape(siteUrl)}"><meta name="robots" content="index,follow,max-image-preview:large">
-<meta name="theme-color" content="#111413"><link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<meta name="theme-color" content="#111413"><script>${themeBootScript}</script><link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Spectrum"><meta property="og:locale" content="en_US">
 <meta property="og:title" content="${escape(siteTitle)}"><meta property="og:description" content="${escape(siteDescription)}"><meta property="og:url" content="${escape(siteUrl)}">
 <meta property="og:image" content="${escape(new URL(social,siteUrl).href)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Spectrum Simulations: creative photo effects, shown on a fox image. Simulated."><meta name="twitter:image" content="${escape(new URL(social,siteUrl).href)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(siteTitle)}"><meta name="twitter:description" content="${escape(siteDescription)}">

@@ -85,3 +85,9 @@ Uploaded photos are processed in the browser and are not sent to a server by thi
 Original application code is released under the [MIT license](LICENSE), copyright 2026 David B. Stevens. The sample photos, Geist font, and third-party software retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The MIT license requires preservation of copyright/license notices; it does not require visible UI attribution in forks.
 
 Bug reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). For a security issue, see [SECURITY.md](SECURITY.md).
+
+### Monochrome and tone controls
+
+In Create photo effects, choose a spectrum filter, then select **Monochrome**. The filtered RGB result is converted to luminance grayscale. Use **Adjust tones** and drag the filtered side up/down for brightness or right/left for contrast, or use the labeled sliders. Double-click the filtered side or use **Reset tones** to return to neutral. Switch to **Pan** to move a zoomed image; the original and processed sides stay aligned. **Keep adjustments across filters** retains tone settings when changing bands. PNG exports include the current tones. Switch to Color for animated GIF sweeps. All-bands thumbnails remain in color, and favorites currently save the existing filter settings rather than monochrome/tone settings.
+
+The theme selector offers Light, Dark, Original, and Default (device). Theme choice is remembered in the browser and does not change images or export colors.

@@ -11,6 +11,7 @@ import { blendPixels } from '@/lib/viewer';
 import { SpectrumViewer } from '@/components/spectrum-viewer';
 import { EffectControls, SweepControls, Favorites } from '@/components/creative-controls';
 import { createEffect, defaultEffects, type EffectOptions, type Favorite } from '@/lib/creative';
+import { ThemeSelector } from '@/components/theme-selector';
 import { SpectrumLogo } from '@/components/spectrum-logo';
 import { ModelControls, type EditTool } from '@/components/model-controls';
 import { ReferencePanel, type ReferenceImage } from '@/components/reference-panel';
@@ -151,7 +152,7 @@ export default function Home() {
  <div className="science-note"><Info size={17}/><p><strong>A creative simulation</strong>All light is electromagnetic radiation. These views combine RGB pixels with editable assumptions; they do not measure unseen radiation. <button onClick={()=>setAbout(true)}>How it works <ArrowUpRight size={12}/></button></p></div>
 </>;
  return <div className="app-shell" style={{'--band-color':original?'#d6eea2':band.color} as CSSProperties}>
- <header className="topbar"><a className="brand" href="/" aria-label="Spectrum Simulations home"><SpectrumLogo/><span className="brand-label">ELECTROMAGNETIC EXPLORER</span></a><button className="header-note about-button" onClick={()=>setAbout(true)}><Info size={15}/> About the simulations</button></header>
+ <header className="topbar"><a className="brand" href="/" aria-label="Spectrum Simulations home"><SpectrumLogo/><span className="brand-label">ELECTROMAGNETIC EXPLORER</span></a><div className="header-actions"><ThemeSelector/><button className="header-note about-button" onClick={()=>setAbout(true)}><Info size={15}/> About the simulations</button></div></header>
  <main>
  <div className="workspace-heading"><div><div className="eyebrow">THE WORLD, IN A DIFFERENT LIGHT</div><h1>Explore beyond the visible<span>.</span></h1></div><button className="upload-button" onClick={()=>fileInput.current?.click()} disabled={uploadBusy}>{uploadBusy?<LoaderCircle className="spin" size={17}/>:<Upload size={17}/>} {uploadBusy?'Opening image…':'Upload image'}</button></div>
  <p className="intro-copy">See what real sensors reveal. Understand the science. Create something of your own.</p>
