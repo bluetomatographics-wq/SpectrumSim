@@ -25,7 +25,7 @@ Live app: [spectrumsimulations.com](https://spectrumsimulations.com/)
 - Automatic spectrum playback, saved favorite settings, and an RGB pixel inspector.
 - PNG image/comparison downloads and animated GIF spectrum exports.
 - Modeled and Classic rendering, with older favorites retaining their Classic appearance.
-- Linear-light visible spectrum approximation with wavelength and bandwidth controls.
+- Visible RGB Multiply filters, with desaturation and tone adjustment after filtering.
 - Material-aware infrared, UV, thermal, and radar illustrations; editable circular material regions and a material map.
 - X-ray transmission using NIST attenuation data, assumed thickness, energy, and display polarity.
 - Movable hypothetical radio/gamma sources, gamma exposure and noise controls, and separate display palettes.
@@ -65,7 +65,7 @@ The GitHub workflow runs checks on pushes and pull requests and provides downloa
 pnpm check
 ```
 
-Checks cover TypeScript, all 84 stock-photo/band combinations, opacity and mixing, transparent pixels, zoom geometry and animation, favorites validation, GIF decoding and cancellation, NIST reference transmission, temperature and thickness behavior, spectral selectivity, material regions, hypothetical source independence, and generated website content/assets. These are software and equation checks, not validation against calibrated sensor captures. Test images stay local. `.build/` and `outputs/` are generated and excluded from Git.
+Checks cover TypeScript, all 84 stock-photo/band combinations, opacity and mixing, transparent pixels, zoom geometry and animation, favorites validation, GIF decoding and cancellation, NIST reference transmission, temperature and thickness behavior, RGB filter selectivity, material regions, hypothetical source independence, and generated website content/assets. These are software and equation checks, not validation against calibrated sensor captures. Test images stay local. `.build/` and `outputs/` are generated and excluded from Git.
 
 ## Source layout
 
@@ -88,6 +88,6 @@ Bug reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md
 
 ### Monochrome and tone controls
 
-In Create photo effects, choose a spectrum filter, then select **Monochrome**. The filtered RGB result is converted to luminance grayscale. Use **Adjust tones** and drag the filtered side up/down for brightness or right/left for contrast, or use the labeled sliders. Double-click the filtered side or use **Reset tones** to return to neutral. Switch to **Pan** to move a zoomed image; the original and processed sides stay aligned. **Keep adjustments across filters** retains tone settings when changing bands. PNG exports include the current tones. Switch to Color for animated GIF sweeps. All-bands thumbnails remain in color, and favorites currently save the existing filter settings rather than monochrome/tone settings.
+In Create photo effects, choose a spectrum filter, then select **Monochrome**. Visible filters multiply the original RGB channels by the selected color. Monochrome removes saturation using HSL lightness, without automatic white normalization. Drag the original (left) side to pan both images when zoomed; drag the filtered right side up/down for brightness or right/left for contrast. Labeled sliders provide the same adjustments. Double-click the filtered side or use **Reset tones** to return to neutral. In Color mode, either side pans and tone controls are disabled. **Keep adjustments across filters** retains tones when changing bands. PNG exports include current tones; switch to Color for GIF sweeps. All-bands thumbnails remain in color, and favorites save filter settings rather than monochrome/tone settings. The split comparison preserves image proportions and alignment.
 
 The theme selector offers Light, Dark, Original, and Default (device). Theme choice is remembered in the browser and does not change images or export colors.

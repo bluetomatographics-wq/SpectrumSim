@@ -1,11 +1,11 @@
-# Spectrum Simulations 1.1 — rendering notes
+# Spectrum Simulations 1.4 — rendering notes
 
 Created and designed by David B. Stevens · BUILT BY GPT6 ASTRA  
 Contact: info@spectrumsimulations.com
 
 ## What changed
 
-Modeled rendering replaces the default brightness/tint filters with a combination of physical equations and explicit scene assumptions. Classic retains the original effects, including the inverted-image X-ray look. Saved favorites from the original release reopen in Classic mode. This is an educational photo explorer, not a sensor simulator with established predictive accuracy.
+Modeled rendering replaces the default brightness/tint filters with a combination of physical equations and explicit scene assumptions. Classic retains the original non-visible effects, including the inverted-image X-ray look. Saved favorites from the original release reopen in Classic mode. This is an educational photo explorer, not a sensor simulator with established predictive accuracy.
 
 An RGB photograph does not uniquely determine its visible spectrum, much less temperature, UV reflectance, interior structure, radar return, or radiation sources. This release uses no AI, pretrained model, depth estimator, or automatic anatomical reconstruction. It does not manufacture hidden bones or present detected radiation.
 
@@ -19,13 +19,15 @@ Users can choose one material for all unmarked pixels and stamp up to 48 circula
 
 Vegetation, water, skin, fabric/fur, wood/soil, metal, glass, and sky have **qualitative** infrared, UV, emissivity, temperature-offset, and radar parameters. Those values are not a measured material library. No USGS reflectance dataset is imported.
 
-## Visible bands: approximate spectral filtering
+## Visible bands: RGB Multiply filtering
 
-Seven visible bands use a smooth spectral prior built from three Gaussian RGB basis functions. The app integrates that assumed spectrum through a Gaussian wavelength filter, then uses analytic approximations to the CIE 1931 observer to convert to XYZ and display RGB. Wavelength shift and filter bandwidth change the integration. Negative display components are clipped.
+The seven visible selections use channel-by-channel Multiply in encoded RGB: output = source × filter / 255. Filter colors are Red (255,0,0), Orange (255,128,0), Yellow (255,255,0), Green (0,255,0), Cyan (0,255,255), Blue (0,0,255), and Violet (128,0,255). Strength scales the result; opacity blends it with the original. Visible filters use this rule regardless of older saved rendering-engine settings. Old wavelength and bandwidth controls are no longer exposed for these filters.
 
-The filter is normalized to its transmitted white maximum so narrow filters remain visible. Consequently, displayed brightness is not absolute optical throughput. The RGB basis is a chosen prior, not an inverse calibrated camera response, and cannot recover metameric spectral differences. Wider bandwidth will change color mixing without necessarily producing a brighter display.
+Monochrome is computed after filtering, mixing, and opacity blending: gray = (max(R,G,B) + min(R,G,B)) / 2. This HSL lightness conversion targets the demonstrated Multiply followed by Hue/Saturation -100 workflow, rather than weighted luminance or direct channel extraction. No white normalization is applied: full-intensity primary colors desaturate to about 128. Brightness and contrast follow this stage. The same desaturation is applied to rendered non-visible results when Monochrome is selected.
 
-Sources: [Wyman, Sloan & Shirley, analytic color-matching functions (2013)](https://jcgt.org/published/0002/02/01/), [Physically Based Rendering: RGB-to-spectrum ambiguity](https://www.pbr-book.org/3ed-2018/Color_and_Radiometry/The_SampledSpectrum_Class).
+These are editing operations, not optical passband measurements. A screenshot comparison is not a color-managed, pixel-exact validation against Photoshop. Adobe documents Desaturate as equivalent to setting Hue/Saturation to -100: [Adobe desaturation reference](https://helpx.adobe.com/sg/photoshop/using/applying-special-color-effects-images.html).
+
+The older Gaussian spectral approximation remains an internal model helper; the photo studio no longer uses it for visible filter selection.
 
 ## Near infrared
 
@@ -91,7 +93,7 @@ The app links to the [EPFL corresponding RGB/NIR scene dataset](https://www.epfl
 
 ## Validation scope
 
-Automated checks cover all 84 stock-photo/band combinations, alpha preservation, spectral selectivity, linear-light conversion, a numerical NIST water-slab reference, monotonic attenuation and temperature behavior, uniform slab independence from optical brightness, material overrides, source independence, normalized regions, Classic favorite migration, zoom, mixing, PNG processing paths, and decoded GIF frames/cancellation.
+Automated checks cover all 84 stock-photo/band combinations, alpha preservation, RGB filter selectivity, linear-light conversion, a numerical NIST water-slab reference, monotonic attenuation and temperature behavior, uniform slab independence from optical brightness, material overrides, source independence, normalized regions, Classic favorite migration, zoom, mixing, PNG processing paths, and decoded GIF frames/cancellation.
 
 Browser checks exercise material editing, reference upload and reset, palettes, band selection, and responsive layout. Loading the same RGB image as a reference is a functional comparison test, not sensor validation. This release has **not** been quantitatively validated against calibrated multispectral, thermal, radar, X-ray, or gamma captures.
 

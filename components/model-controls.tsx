@@ -1,3 +1,4 @@
+import {filterColors} from '@/lib/filter-color';
 'use client';
 import { useState } from 'react';
 import { defaultModel, materialIds, materialNames, modelSettings, visibleCenters, isVisible, type Material, type ModelSettings } from '@/lib/models';
@@ -12,6 +13,7 @@ export function ModelControls({bandId,options,onChange,tool,onTool,brush,onBrush
  const change=(patch:Partial<ModelSettings>)=>onChange({...options,model:{...m,...patch}});
  const select=(label:string,key:keyof ModelSettings,items:[string,string][])=> <label className="model-select"><span>{label}</span><select value={String(m[key])} onChange={e=>change({[key]:e.target.value})}>{items.map(([v,name])=><option key={v} value={v}>{name}</option>)}</select></label>;
  const range=(label:string,key:keyof ModelSettings,min:number,max:number,unit='',step=1)=><Range label={label} value={Number(m[key])} min={min} max={max} unit={unit} step={step} onChange={v=>change({[key]:v})}/>;
+ if(visible)return <fieldset className="model-controls"><legend>Color filter reference</legend><p>Multiply RGB: <strong>{filterColors[bandId].join(', ')}</strong></p><p className="tool-help">Color: multiply the original by this color. Monochrome: remove saturation after filtering. Neutral tone settings preserve the darker result.</p></fieldset>;
  return <fieldset className="model-controls" disabled={disabled}><legend>Simulation studio</legend>
  <div className="engine-tabs" role="group" aria-label="Rendering method"><button type="button" aria-pressed={m.engine==='informed'} onClick={()=>change({engine:'informed'})}>Modeled</button><button type="button" aria-pressed={m.engine==='classic'} onClick={()=>{change({engine:'classic',showMaterials:false});onTool('view');}}>Classic</button></div>
  {m.engine==='classic'?<p className="tool-help">The original artistic filters. Switch to Modeled to explore materials, wavelength response, and source assumptions.</p>:<>

@@ -45,3 +45,7 @@
 .spectrum-canvas-viewer>.comparison-surface{aspect-ratio:1.6;flex:none;min-height:240px;width:100%}
 .tone-controls{background:var(--background);color:var(--foreground)}
 .comparison-surface.tone-adjusting{touch-action:none}
+
+/* Preserve source aspect ratio in this review. Uniform image scale on both axes. */
+.spectrum-canvas-viewer>.comparison-surface{min-height:0}
+.creative-workspace .viewer:not(.gallery-viewer):has(.spectrum-canvas-viewer){height:auto;min-height:0;overflow:clip}

@@ -1,3 +1,4 @@
+import {filterColors} from './filter-color';
 import { defaultModel, modelSettings, validModel, type ModelSettings } from './models';
 import { bands, transformPixels } from './spectrum';
 import { blendPixels, type Size, type ViewPose, imageRectangle } from './viewer';
@@ -20,7 +21,7 @@ export function createEffect(source: Uint8ClampedArray, bandId: string, size: Si
 export function effectLabel(bandId: string, options: EffectOptions) {
   const primary = bands.find(b => b.id === bandId)?.short ?? bandId;
   const secondary = bands.find(b => b.id === options.mixBand)?.short;
-  const m=modelSettings(options.model); const suffix=m.showMaterials?'Material map':m.engine==='classic'?'Classic':bandId==='xray'?`${m.energy} keV · ${m.thickness} mm assumed`:bandId==='uv'?m.uvMode==='reflected'?'Reflected UV':'UV fluorescence':bandId==='thermal'?'Assumed thermal':bandId==='radio'||bandId==='gamma'?'Assumed source':'Modeled';
+  const m=modelSettings(options.model); const suffix=filterColors[bandId]?'RGB Multiply':m.showMaterials?'Material map':m.engine==='classic'?'Classic':bandId==='xray'?`${m.energy} keV · ${m.thickness} mm assumed`:bandId==='uv'?m.uvMode==='reflected'?'Reflected UV':'UV fluorescence':bandId==='thermal'?'Assumed thermal':bandId==='radio'||bandId==='gamma'?'Assumed source':'Modeled';
   const name=secondary ? `${primary} + ${secondary} (${options.mixAmount}%)` : primary; return `${name} · ${suffix}`;
 }
 

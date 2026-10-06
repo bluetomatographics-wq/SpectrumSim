@@ -1,9 +1,8 @@
-const linear = (v:number) => { v/=255; return v<=.04045?v/12.92:((v+.055)/1.055)**2.4; };
-const encode = (v:number) => 255*(v<=.0031308?12.92*v:1.055*v**(1/2.4)-.055);
-const decode = Array.from({length:256},(_,v)=>linear(v));
+// HSL lightness desaturation for the user's Multiply + Saturation -100 reference.
+// No luminance weighting, white normalization, or automatic contrast stretch.
 export function monochromePixels(source:Uint8ClampedArray) {
   const out=new Uint8ClampedArray(source.length);
-  for(let i=0;i<source.length;i+=4){out[i]=out[i+1]=out[i+2]=encode(.2126*decode[source[i]]+.7152*decode[source[i+1]]+.0722*decode[source[i+2]]);out[i+3]=source[i+3];}
+  for(let i=0;i<source.length;i+=4){out[i]=out[i+1]=out[i+2]=(Math.max(source[i],source[i+1],source[i+2])+Math.min(source[i],source[i+1],source[i+2]))/2;out[i+3]=source[i+3];}
   return out;
 }
 export function tonePixels(source:Uint8ClampedArray,brightness:number,contrast:number){

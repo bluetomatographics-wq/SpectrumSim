@@ -24,8 +24,9 @@ const green=new Uint8ClampedArray([60,150,40,255]);
 assert.ok(transformPixels(green,'nir',{width:1,height:1},100,{...gray,material:'vegetation'})[0]>transformPixels(green,'nir',{width:1,height:1},100,{...gray,material:'fabric'})[0],'Same visible color has different assumed material response');
 const redBlue=new Uint8ClampedArray([255,0,0,255,0,0,255,255]);
 const red=transformPixels(redBlue,'red',{width:2,height:1},100,gray),blue=transformPixels(redBlue,'blue',{width:2,height:1},100,gray);
-assert.ok(red[0]>red[4]);assert.ok(blue[4]>blue[0]);
-assert.notDeepEqual(transformPixels(redBlue,'green',{width:2,height:1},100,{...gray,bandwidth:5}),transformPixels(redBlue,'green',{width:2,height:1},100,{...gray,bandwidth:120}));
+assert.deepEqual(Array.from(red),[255,0,0,255,0,0,0,255]);
+assert.deepEqual(Array.from(blue),[0,0,0,255,0,0,255,255]);
+assert.deepEqual(transformPixels(redBlue,'green',{width:2,height:1},100,{...gray,bandwidth:5}),transformPixels(redBlue,'green',{width:2,height:1},100,{...gray,bandwidth:120}),'RGB Multiply is independent of inactive wavelength settings');
 const a=new Uint8ClampedArray(64*64*4).fill(255),b=a.slice();for(let i=0;i<b.length;i+=4){b[i]=0;b[i+1]=0;b[i+2]=0;}
 for(const band of ['radio','gamma']){
  const args={...defaultModel,noise:0};const full=transformPixels(a,band,{width:64,height:64},100,args);

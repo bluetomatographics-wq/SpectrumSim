@@ -29,16 +29,16 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
   const beforeCanvas = useRef<HTMLCanvasElement>(null);
   const effectCanvas = useRef<HTMLCanvasElement>(null);
   const processed = useMemo(()=>createEffect(loaded.pixels.data,band.id,loaded,effects),[loaded,band.id,effects]);
-  const [monochrome,setMonochrome]=useState(false),[toneMode,setToneMode]=useState<'pan'|'adjust'>('adjust');
+  const [monochrome,setMonochrome]=useState(false);
   const [brightness,setBrightness]=useState(0),[contrast,setContrast]=useState(0),[keepTones,setKeepTones]=useState(false);
   const toneDrag=useRef<{id:number;x:number;y:number;b:number;c:number}|null>(null);
   useEffect(()=>{if(!keepTones){setBrightness(0);setContrast(0);}},[band.id,keepTones]);
   const blended = useMemo(()=>blendPixels(loaded.pixels.data,processed,original?0:opacity),[loaded,processed,opacity,original]);
   const gray=useMemo(()=>monochromePixels(blended),[blended]);
   const displayed=useMemo(()=>monochrome&&!original?tonePixels(gray,brightness,contrast):blended,[gray,blended,brightness,contrast,monochrome,original]);
-  const toneActive=monochrome&&!original&&tool==='view'&&toneMode==='adjust';
-  const resetTones=()=>{setBrightness(0);setContrast(0);};
   const [inspect,setInspect]=useState(false),[point,setPoint]=useState<{x:number;y:number}|null>(null);
+  const toneActive=monochrome&&!original&&tool==='view'&&!inspect;
+  const resetTones=()=>{setBrightness(0);setContrast(0);};
   const [exportOpen,setExportOpen]=useState(false),[exporting,setExporting]=useState(false),[progress,setProgress]=useState(0),[exportMessage,setExportMessage]=useState('');
   const exportAbort=useRef<AbortController|null>(null);
   const gesture = useRef<{ id: number; startX: number; startY: number; pan: { x: number; y: number } } | null>(null);
@@ -214,10 +214,10 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
 
   return <><div className="spectrum-canvas-viewer">
     <div className="tone-toolbar">
-      <span>Filtered image</span><button aria-pressed={!monochrome} onClick={()=>{setMonochrome(false);setToneMode('pan');}}>Color</button><button aria-pressed={monochrome} onClick={()=>{setMonochrome(true);setToneMode('adjust');onOriginalChange(false);}}>Monochrome</button>
+      <span>Filtered image</span><button aria-pressed={!monochrome} onClick={()=>{setMonochrome(false);}}>Color</button><button aria-pressed={monochrome} onClick={()=>{setMonochrome(true);onOriginalChange(false);}}>Monochrome</button>
       
     </div>
-    <div ref={surface} className={'comparison-surface ' + (pose.zoom > 1 ? 'zoomed ' : '') + (panning ? 'panning' : '')+(tool!=='view'?' editing':'')+(toneActive?' tone-adjusting':'')}
+    <div ref={surface} style={{aspectRatio:`${loaded.width} / ${loaded.height}`}} className={'comparison-surface ' + (pose.zoom > 1 ? 'zoomed ' : '') + (panning ? 'panning' : '')+(tool!=='view'?' editing':'')+(toneActive?' tone-adjusting':'')}
       tabIndex={0} role="group" aria-label={tool!=='view'?'Image editor. Tap to place. Arrow keys move the target, Enter places it.':inspect?'Image viewer. Scroll wheel or plus and minus zoom. Arrow keys move the inspected pixel; Shift moves ten pixels.':'Image viewer. Scroll wheel or plus and minus zoom, arrow keys pan, zero resets.'}
       onDoubleClick={event=>{const bounds=event.currentTarget.getBoundingClientRect();if(toneActive&&!(event.target as Element).closest('[data-viewer-control]')&&(!splitVisible||(event.clientX-bounds.left)/bounds.width>=split/100))resetTones();}}
       onPointerDown={startPan} onPointerMove={movePan} onPointerUp={stopPan} onPointerCancel={stopPan} onLostPointerCapture={stopPan} onKeyDown={keyboard}>
@@ -239,10 +239,10 @@ export function SpectrumViewer({ reference,tool,onEditPoint,loaded, band, opacit
       {(band.id==='radio'||band.id==='gamma')&&model.engine==='informed'&&!original&&<span className="source-pin" aria-label="Assumed source location" style={{left:rectangle.left+model.sourceX/100*rectangle.width,top:rectangle.top+model.sourceY/100*rectangle.height}}>+</span>}
       {inspect?<div className="pixel-readout" aria-label="Pixel inspector">
         {point&&originalRGB&&processedRGB?<><span>Pixel {point.x}, {point.y} · RGB</span><span><i style={{background:`rgb(${originalRGB.join(',')})`}}/>Original <code>{originalRGB.join(', ')}</code></span><span><i style={{background:`rgb(${processedRGB.join(',')})`}}/>{original?'Preview':'Processed'} <code>{processedRGB.join(', ')}</code></span><small>Alpha {loaded.pixels.data[pixelIndex+3]} / 255 · Hover, tap, or use arrow keys</small></>:<span>Point or tap inside the image to inspect its RGB values.</span>}
-      </div>:<div className="viewer-guidance"><span>{toneActive ? 'Right image: drag ↑ brighter · → more contrast' : pose.zoom > 1 ? 'Scroll to zoom · Drag to pan' : splitVisible ? 'Scroll to zoom · Drag the divider to compare' : original ? 'Original RGB · Scroll to zoom' : 'Modeled / artistic simulation · Scroll to zoom'}</span><span>{loaded.width} × {loaded.height}</span></div>}
+      </div>:<div className="viewer-guidance"><span>{toneActive ? 'Left: pan both · Right: adjust tones' : pose.zoom > 1 ? 'Scroll to zoom · Drag to pan' : splitVisible ? 'Scroll to zoom · Drag the divider to compare' : original ? 'Original RGB · Scroll to zoom' : 'Modeled / artistic simulation · Scroll to zoom'}</span><span>{loaded.width} × {loaded.height}</span></div>}
     </div>
     <div className="tone-controls">
-      <div className="tone-toolbar"><button aria-pressed={toneMode==='adjust'} disabled={!monochrome||original||tool!=='view'} onClick={()=>{setToneMode('adjust');setInspect(false);}}>Adjust tones</button><button aria-pressed={toneMode==='pan'} onClick={()=>setToneMode('pan')}>Pan</button><small>{toneMode==='adjust'?'Drag the filtered side · Double-click to reset':'Drag to pan when zoomed · Scroll to zoom'}</small></div>
+      <div className="tone-toolbar"><small>{toneActive?'Left: drag to pan both images when zoomed · Right: drag ↑ brighter / → more contrast · Double-click right to reset':inspect?'Pixel inspection active · Turn off Inspect pixels to adjust tones':'Drag to pan when zoomed · Choose Monochrome to adjust tones on the right'}</small></div>
       <div className="tone-sliders"><label>Brightness <output>{Math.round(brightness)}</output><input aria-label="Monochrome brightness" type="range" min="-100" max="100" step="1" value={brightness} disabled={!monochrome||original} onChange={e=>setBrightness(+e.target.value)}/></label><label>Contrast <output>{Math.round(contrast)}</output><input aria-label="Monochrome contrast" type="range" min="-100" max="100" step="1" value={contrast} disabled={!monochrome||original} onChange={e=>setContrast(+e.target.value)}/></label></div>
       <div className="tone-toolbar"><label><input type="checkbox" checked={keepTones} onChange={e=>setKeepTones(e.target.checked)}/> Keep adjustments across filters</label><button onClick={resetTones}>Reset tones</button></div>
     </div>

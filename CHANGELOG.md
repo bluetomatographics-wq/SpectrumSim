@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0 — 2026-10-06
+
+- Replace visible spectral guesses with RGB Multiply colors and use lightness desaturation for Monochrome, matching the approved editing workflow.
+- Keep left-side synchronized pan and right-side monochrome tone dragging; remove conflicting Pan/Adjust tones buttons. Color mode pans on either side.
+- Fix a fixed-height layout rule that clipped the image and Color/Monochrome controls; preserve source proportions.
+- Retain smooth zoom, tone sliders/reset/retention, PNG exports, themes, and the six stock photos.
+- Add numerical filter-response tests and update rendering documentation. The private review test pattern is not bundled in the public release.
+
 ## 1.3.0 — 2026-10-04
 
 - Added monochrome display of the selected filter, brightness and contrast sliders and drag adjustments, Pan/Adjust tones modes, reset, and optional retention across filters.
